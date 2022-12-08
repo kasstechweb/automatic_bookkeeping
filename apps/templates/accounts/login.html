@@ -8,7 +8,7 @@
 {% block content %}
 
   <div class="row justify-content-md-center">
-    <div class="col-md-5">
+    <div class="col-lg-4 col-md-6 col-sm-8 ml-auto mr-auto">
       <div class="card">
         <div class="card-header card-header-primary">
           <h4 class="card-title">
@@ -19,7 +19,12 @@
 
           <h6 class="card-category">
               {% if msg %}
-                <span class="text-danger">{{ msg | safe }}</span>
+                <!-- <span class="text-danger">{{ msg | safe }}</span> -->
+                <script>
+                  $(document).ready(function() {
+                    mk.showNotification('top','right', 'danger', '{{ msg | safe }}');
+                  });
+                </script>
               {% else %}
                   Add your credentials
               {% endif %}  
@@ -33,9 +38,18 @@
 
             <div class="row">
               <div class="col-md-12">
-                <div class="form-group">
-                  <label class="bmd-label-floating">Username</label>
-                  {{ form.username }}
+                <div class="bmd-form-group">
+                  <div class="input-group">
+                    <div class="input-group-prepend">
+                      <span class="input-group-text">
+                        <i class="material-icons">email</i>
+                      </span>
+                    </div>
+                    {{ form.email }}
+                    <!-- <input type="email" class="form-control" placeholder="Email..."> -->
+                  </div>
+                  <!-- <label class="bmd-label-floating">Username</label> -->
+                  
                 </div>
               </div>
             </div>
@@ -44,9 +58,18 @@
 
             <div class="row">
               <div class="col-md-12">
-                <div class="form-group">
-                  <label class="bmd-label-floating">Password</label>
-                  {{ form.password }}
+                <div class="bmd-form-group">
+                  <div class="input-group">
+                    <div class="input-group-prepend">
+                      <span class="input-group-text">
+                        <i class="material-icons">lock_outline</i>
+                      </span>
+                    </div>
+                    {{ form.password }}
+                    <!-- <input type="password" class="form-control" placeholder="Password..."> -->
+                  </div>
+                  <!-- <label class="bmd-label-floating">Password</label> -->
+                  
                 </div>
               </div>
             </div>

@@ -14,13 +14,17 @@ def login_view(request):
     if request.method == "POST":
 
         if form.is_valid():
-            username = form.cleaned_data.get("username")
+            email = form.cleaned_data.get("email")
+            
+            # username = form.cleaned_data.get("username")
             password = form.cleaned_data.get("password")
-            user = authenticate(username=username, password=password)
+            # user = authenticate(username=username, password=password)
+            user = authenticate(username=email, password=password)
             if user is not None:
                 login(request, user)
                 return redirect("/")
             else:
+                # msg = email
                 msg = 'Invalid credentials'
         else:
             msg = 'Error validating the form'
@@ -40,7 +44,7 @@ def register_user(request):
             raw_password = form.cleaned_data.get("password1")
             user = authenticate(username=username, password=raw_password)
 
-            msg = 'User created - please <a href="/login">login</a>.'
+            msg = 'User created - please <a href="/login/">login</a>.'
             success = True
 
             # return redirect("/login/")

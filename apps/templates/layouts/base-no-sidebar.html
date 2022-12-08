@@ -19,27 +19,34 @@
    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css">
    <!-- CSS Files -->
    <link href="/static/assets/css/material-dashboard.css?v=2.1.2" rel="stylesheet" />
- 
+   <link href="/static/assets/css/mk-style.css" rel="stylesheet" />
+   <script src="/static/assets/js/core/jquery.min.js"></script>
+   
    <!-- Specific Page CSS goes HERE  -->
    {% block stylesheets %}{% endblock stylesheets %}
  
  </head>
  
  <body class="">
-   <div class="wrapper ">
+   <div class="wrapper wrapper-full-page">
  
      <div class="main-panel" style="width: 100%;float:none;">
  
        <!-- End Navbar -->
-       <div class="content">
-         <div class="container-fluid">
+
+       <div class="page-header login-page header-filter" filter-color="black" style="background-image: url('/static/assets/img/login.jpg'); background-size: cover; background-position: top center;">
+
+       <!-- <div class="content"> -->
+         <div class="container" style="margin: auto;">
  
            {% block content %}{% endblock content %}
  
          </div>
+
+         {% include 'includes/footer.html' %}
        </div>
  
-       {% include 'includes/footer.html' %}
+       
  
      </div>
    </div>

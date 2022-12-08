@@ -19,7 +19,14 @@
 
           <h6 class="card-category">
               {% if msg %}
-                <span class="text-danger">{{ msg | safe }}</span>
+                  {% if success %}
+                    <script>
+                      $(document).ready(function() {
+                        mk.showNotification('top','right', 'success', '{{ msg | safe }}');
+                      });
+                    </script>
+                  {% endif %}
+                  <!-- <span class="text-danger">{{ msg | safe }}</span> -->
               {% else %}
                 Add your credentials
               {% endif %}  
