@@ -13,11 +13,13 @@
   <div class="col-md-10">
     <div class="card">
       <div class="card-header card-header-primary">
-        <h4 class="card-title">Edit Profile</h4>
-        <p class="card-category">Complete your profile</p>
+        <h4 class="card-title">Upload Statement</h4>
+        <p class="card-category">select your bank and upload a statement</p>
       </div>
       <div class="card-body">
-        <form>
+        <form action="." method="POST" class="post-form">
+          {% csrf_token %}
+          <input type="text" name="test" value="testv">
           <div class="row">
             <div class="col">
               <h4>Select your Bank:  </h4>
@@ -46,19 +48,17 @@
                   </span>
               
                   <span class="mk-input-group-text btn-file">
-                    <span class="fileinput-new">Upload file</span>
+                    <span class="fileinput-new">Select file</span>
                     <span class="fileinput-exists">Change</span>
-                    <input type="file" name="..." multiple>
+                    <input type="file" name="file">
                   </span>
                 </span>
               </div>
               
-              
-              
             </div>
           </div>
 
-          <button type="submit" class="btn btn-primary pull-right">Update Profile</button>
+          <button type="submit" class="btn btn-primary pull-right">Next</button>
           <div class="clearfix"></div>
         </form>
       </div>
