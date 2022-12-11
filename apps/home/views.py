@@ -9,6 +9,8 @@ from django.urls import reverse
 # from django.shortcuts import render  
 # from .forms import StudentForm  
 
+from .functions import handle_uploaded_file
+
 
 @login_required(login_url="/login/")
 def index(request):
@@ -48,8 +50,11 @@ def pages(request):
 def upload_statement(request):
     context = {}
     if request.method == "POST":
-        # print(request.POST.get('test'))
-        print(request)
+        print(request.POST.get('bank'))
+        print(request.FILES)
+        handle_uploaded_file(request.FILES['statement_file'])
+        # statement_file = request.FILES['statement_file']
+        # return HttpResponse('the name is '+ str(statement_file))
     # All resource paths end in .html.
     # Pick out the html file name from the url. And load that template.
     try:

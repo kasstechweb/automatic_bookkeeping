@@ -17,20 +17,20 @@
         <p class="card-category">select your bank and upload a statement</p>
       </div>
       <div class="card-body">
-        <form action="." method="POST" class="post-form">
+        <form action="." method="POST" class="post-form" enctype="multipart/form-data">
           {% csrf_token %}
-          <input type="text" name="test" value="testv">
+          <!-- <input type="text" name="test" value="testv"> -->
           <div class="row">
             <div class="col">
               <h4>Select your Bank:  </h4>
               <div class="cc-selector">
-                  <input id="td" type="radio" name="credit-card" value="td" />
+                  <input id="td" type="radio" name="bank" value="td" />
                   <label class="drinkcard-cc td" for="td"></label>
-                  <input id="rbc" type="radio" name="credit-card" value="rbc" />
+                  <input id="rbc" type="radio" name="bank" value="rbc" />
                   <label class="drinkcard-cc rbc"for="rbc"></label>
-                  <input id="atb" type="radio" name="credit-card" value="atb" />
+                  <input id="atb" type="radio" name="bank" value="atb" />
                   <label class="drinkcard-cc atb"for="atb"></label>
-                  <input id="servus" type="radio" name="credit-card" value="servus" />
+                  <input id="servus" type="radio" name="bank" value="servus" />
                   <label class="drinkcard-cc servus"for="servus"></label>
               </div>
             </div>
@@ -50,7 +50,7 @@
                   <span class="mk-input-group-text btn-file">
                     <span class="fileinput-new">Select file</span>
                     <span class="fileinput-exists">Change</span>
-                    <input type="file" name="file">
+                    <input type="file" name="statement_file" accept="application/pdf">
                   </span>
                 </span>
               </div>
