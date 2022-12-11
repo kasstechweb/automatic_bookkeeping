@@ -3,153 +3,73 @@
 {% block title %} Upload statement {% endblock %} 
 
 <!-- Specific Page CSS goes HERE  -->
-{% block stylesheets %}{% endblock stylesheets %}
+{% block stylesheets %}
+  <link rel="stylesheet" href="/static/assets/Fileinput.less">
+{% endblock stylesheets %}
 
 {% block content %}
-        <div class="card">
-            <div class="card-header card-header-primary">
-              <h3 class="card-title">Upload statement</h3>
-              <p class="card-category">Handcrafted by our friend
-                <a target="_blank" href="https://github.com/mouse0270">Robert McIntosh</a>. Please checkout the
-                <a href="http://bootstrap-notify.remabledesigns.com/" target="_blank">full documentation.</a>
-              </p>
-            </div>
-            <div class="card-body">
-              <div class="row">
 
-                <div class="col-md-12">
-                    <!-- <h4 class="card-title">Notifications Style</h4> -->
-                    
-                    <form id="TypeValidation" class="form-horizontal" action="" method="">
-                        <div class="row">
-                          <div class="col-md-5">
-                            <div class="form-group">
-                              <label class="bmd-label-floating">UserID (disabled)</label>
-                              <input type="text" class="form-control" disabled value="{{ current_user.id }}">
-                            </div>
-                          </div>
-                          <div class="col-md-3">
-                            <div class="form-group">
-                              <label class="bmd-label-floating">Username</label>
-                              <input type="text" class="form-control" value="{{ current_user.username }}">
-                            </div>
-                          </div>
-                          <div class="col-md-4">
-                            <div class="form-group">
-                              <label class="bmd-label-floating">Email address</label>
-                              <input type="email" class="form-control" value="{{ current_user.email }}">
-                            </div>
-                          </div>
-                        </div>
-                        <div class="row">
-                          <div class="col-md-6">
-                            <div class="form-group">
-                              <label class="bmd-label-floating">Fist Name</label>
-                              <input type="text" class="form-control">
-                            </div>
-                          </div>
-                          <div class="col-md-6">
-                            <div class="form-group">
-                              <label class="bmd-label-floating">Last Name</label>
-                              <input type="text" class="form-control">
-                            </div>
-                          </div>
-                        </div>
-                        <div class="row">
-                          <div class="col-md-12">
-                            <div class="form-group">
-                              <label class="bmd-label-floating">Adress</label>
-                              <input type="text" class="form-control" name="number" number="true" required="true">
-                            </div>
-                          </div>
-                        </div>
-                        <div class="row">
-                          <div class="col-md-4">
-                            <div class="form-group">
-                              <label class="bmd-label-floating">City</label>
-                              <input type="text" class="form-control">
-                            </div>
-                          </div>
-                          <div class="col-md-4">
-                            <div class="form-group">
-                              <label class="bmd-label-floating">Country</label>
-                              <input type="text" class="form-control">
-                            </div>
-                          </div>
-                          <div class="col-md-4">
-                            <div class="form-group">
-                              <label class="bmd-label-floating">Postal Code</label>
-                              <input type="text" class="form-control">
-                            </div>
-                          </div>
-                        </div>
-                        <div class="row">
-                          <div class="col-md-12">
-                            <div class="form-group">
-                              <label>About Me</label>
-                              <div class="form-group">
-                                <label class="bmd-label-floating"> Lamborghini Mercy, Your chick she so thirsty, I'm in that two seat Lambo.</label>
-                                <textarea class="form-control" rows="5"></textarea>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        <button type="submit" class="btn btn-primary pull-right">Update Profile</button>
-                        <div class="clearfix"></div>
-                      </form>
-                </div>
+<div class="row justify-content-md-center">
+  <div class="col-md-10">
+    <div class="card">
+      <div class="card-header card-header-primary">
+        <h4 class="card-title">Edit Profile</h4>
+        <p class="card-category">Complete your profile</p>
+      </div>
+      <div class="card-body">
+        <form>
+          <div class="row">
+            <div class="col">
+              <h4>Select your Bank:  </h4>
+              <div class="cc-selector">
+                  <input id="td" type="radio" name="credit-card" value="td" />
+                  <label class="drinkcard-cc td" for="td"></label>
+                  <input id="rbc" type="radio" name="credit-card" value="rbc" />
+                  <label class="drinkcard-cc rbc"for="rbc"></label>
+                  <input id="atb" type="radio" name="credit-card" value="atb" />
+                  <label class="drinkcard-cc atb"for="atb"></label>
+                  <input id="servus" type="radio" name="credit-card" value="servus" />
+                  <label class="drinkcard-cc servus"for="servus"></label>
               </div>
             </div>
-            <div class="col-md-12">
-              <div class="places-buttons">
-                <div class="row">
-                  <div class="col-md-6 ml-auto mr-auto text-center">
-                    <h4 class="card-title">
-                      Notifications Places
-                      <p class="category">Click to view notifications</p>
-                    </h4>
-                  </div>
+          </div>
+          <div class="row">
+            <div class="col">
+              <h4>Upload your bank statement:  </h4>
+              <div class="fileinput fileinput-new input-group" data-provides="fileinput">
+                <div class="mk-form-control" data-trigger="fileinput">
+                  <span class="fileinput-filename"></span>
                 </div>
-                
+                <span class="input-group-append">
+                  <span class="mk-input-group-text fileinput-exists" data-dismiss="fileinput">
+                    Remove
+                  </span>
+              
+                  <span class="mk-input-group-text btn-file">
+                    <span class="fileinput-new">Upload file</span>
+                    <span class="fileinput-exists">Change</span>
+                    <input type="file" name="..." multiple>
+                  </span>
+                </span>
               </div>
+              
+              
+              
             </div>
-        </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary pull-right">Update Profile</button>
+          <div class="clearfix"></div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
 
 {% endblock content %}
 
 <!-- Specific Page JS goes HERE  -->
 {% block javascripts %}
 
-  <script>
-    $(document).ready(function() {
-      //init DateTimePickers
-      md.initFormExtendedDatetimepickers();
-    });
-  </script>
-
-<script>
-    function setFormValidation(id) {
-      $(id).validate({
-        highlight: function(element) {
-          $(element).closest('.form-group').removeClass('has-success').addClass('has-danger');
-          $(element).closest('.form-check').removeClass('has-success').addClass('has-danger');
-        },
-        success: function(element) {
-          $(element).closest('.form-group').removeClass('has-danger').addClass('has-success');
-          $(element).closest('.form-check').removeClass('has-danger').addClass('has-success');
-        },
-        errorPlacement: function(error, element) {
-          $(element).closest('.form-group').append(error);
-        },
-      });
-    }
-
-    $(document).ready(function() {
-      setFormValidation('#RegisterValidation');
-      setFormValidation('#TypeValidation');
-      setFormValidation('#LoginValidation');
-      setFormValidation('#RangeValidation');
-    });
-  </script>
   
 {% endblock javascripts %}
