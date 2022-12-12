@@ -8,6 +8,7 @@ from .functions import path_and_rename
 # from django.db import models
 
 class Document(models.Model):
+    submitter = models.ForeignKey(User, on_delete=models.CASCADE,)
     docfile = models.FileField(upload_to=path_and_rename)
     # / 'documents/%Y/%m/%d'
 

@@ -1,0 +1,78 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Upload statement {% endblock %} 
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}
+  <link rel="stylesheet" href="/static/assets/Fileinput.less">
+{% endblock stylesheets %}
+
+{% block content %}
+{% if msg %}
+  <script>
+    $(document).ready(function() {
+      mk.showNotification('top','right', 'danger', '{{ msg | safe }}');
+    });
+  </script>
+{% endif %}  
+
+<div class="row justify-content-md-center">
+  <div class="col-md-10">
+    <div class="card">
+      <div class="card-header card-header-primary">
+        <h4 class="card-title">Download Statement</h4>
+        <!-- <p class="card-category">Processing your state</p> -->
+      </div>
+      <div class="card-body">
+        <!-- <form action="{% url 'process_statement' %}" method="POST" class="post-form"> -->
+          {% csrf_token %}
+          <input type="hidden" name="file_id" value="{{ file_id }}">
+        <div class="swal2-header">
+          <div class="swal2-icon swal2-success swal2-animate-success-icon" style="display: flex;">
+          <div class="swal2-success-circular-line-left" style="background-color: rgb(255, 255, 255);">
+          </div>
+          <span class="swal2-success-line-tip"></span> 
+          <span class="swal2-success-line-long"></span>
+          <div class="swal2-success-ring"></div> 
+          <div class="swal2-success-fix" style="background-color: rgb(255, 255, 255);"></div>
+          <div class="swal2-success-circular-line-right" style="background-color: rgb(255, 255, 255);"></div>
+        </div>
+        <h2 class="swal2-title" id="swal2-title">Convert Complete! {{ file_name }}</h2>
+        </div>
+
+        <!-- <button type="button" class="btn btn-blue pull-right">Convert to excel sheet</button> -->
+        <!-- <div class="container"> -->
+          <div class="row">
+            <div class="col text-center">
+              <form method="get" action="{{ file_name }}">
+                <button type="submit" class="btn btn-success justify-content-md-center">
+                    <span class="btn-label">
+                      <i class="material-icons">download</i>
+                    </span>
+                    Download
+                  <div class="ripple-container"></div>
+                </button>
+              </form>
+                <div class="clearfix"></div>
+              </div>
+            </div>
+          <!-- </div> -->
+        <!-- </form> -->
+        
+        <script>
+          $(document).ready(function() {
+              // mk.showSwal('basic')
+            });
+        </script>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+
+  
+{% endblock javascripts %}

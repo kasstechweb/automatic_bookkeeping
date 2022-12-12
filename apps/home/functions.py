@@ -1,6 +1,14 @@
 import os
 from uuid import uuid4
 from django.conf import settings
+from django.contrib.auth.models import User
+
+import re
+
+import requests
+import pdfplumber
+import pandas as pd
+from collections import namedtuple
 
 def handle_uploaded_file(f):
     print('handling ' + settings.MEDIA_ROOT + f.name)
@@ -9,30 +17,9 @@ def handle_uploaded_file(f):
         destination.write(chunk)
     destination.close()
 
-# def update_filename(instance, filename):
-#     path = "documents/%Y/%m/%d"
-#     format = instance.userid + instance.transaction_uuid + instance.file_extension
-#     return os.path.join(path, format)
-
-def unique_filename(path):
-    """
-    Enforce unique upload file names.
-    Usage:
-    class MyModel(models.Model):
-        file = ImageField(upload_to=unique_filename("path/to/upload/dir"))
-    """
-    import os, base64, datetime
-    def _func(instance, filename):
-        name, ext = os.path.splitext(filename)
-        name = bytes(name.encode('utf-8'))
-        datetimenow = bytes(str(datetime.datetime.now()).encode('utf-8'))
-        name = bytes(base64.urlsafe_b64encode(name + datetimenow)).encode('utf-8')
-        return os.path.join(path, name + ext).encode('utf-8')
-    return _func
-
-
 def path_and_rename(instance, filename):
     upload_to = "statements"
+    # print(instance)
     # ext = filename.split('.')[-1]
     # if filename.split('.')[-1] != 'pdf':
         # print('error pdf')
@@ -46,3 +33,49 @@ def path_and_rename(instance, filename):
         filename = '{}.{}'.format(uuid4().hex, ext)
     # return the whole path to the file
     return os.path.join(upload_to, filename)
+
+def td_pdftocsv(request, file_name):
+    current_user = request.user
+    Inv = namedtuple('Inv', 'tr_date date description amount')
+    text = '' # new line
+    with pdfplumber.open(settings.MEDIA_ROOT + "/" + str(file_name)) as pdf:
+        for pdf_page in pdf.pages:
+            single_page_text = pdf_page.extract_text(x_tolerance=1, layout=False)
+            text = text + '\n' + single_page_text
+
+    # new_vend_re = re.compile(r'^.*DESCRIPTION.*$')
+    # for line in text.split('\n'):
+    #     if new_vend_re.match(line):
+    #         print(line)
+    
+    # for line in text.split('\n'):
+    #     if new_vend_re.match(line):
+    #         vend_num, *vend_name = line.split()
+    #         vend_name = ' '.join(vend_name)
+    #         print(vend_num)
+    #         print(vend_name)
+    inv_line_re = re.compile(r'((JAN?|FEB?|MAR?|APR?|MAY|JUN?|JUL?|AUG?|SEP?|OCT?|NOV?|DEC?)+ \d{1,2}) '
+                         '((JAN?|FEB?|MAR?|APR?|MAY|JUN?|JUL?|AUG?|SEP?|OCT?|NOV?|DEC?)+ \d{1,2}) '
+                         '([^\$]+)+ ([-]?[$]?\d{1,3}(?:,?\d{3})*\.\d{2})'
+                        )
+
+    for line in text.split('\n'):
+        line = inv_line_re.search(line)
+        if line:
+            # print(line)
+            print(line.group(1) + ' * ' +line.group(3)+ ' * ' +line.group(5)+ ' * ' +line.group(6) )
+    
+    line_items = []
+    for line in text.split('\n'):
+        line = inv_line_re.search(line)
+        if line:
+            inv_dt = line.group(1)
+            due_dt = line.group(3)
+            inv_amt = line.group(5)
+            desc = line.group(6)
+            line_items.append(Inv(inv_dt, due_dt, inv_amt, desc))
+
+    df = pd.DataFrame(line_items)
+
+    filename = str(file_name).rsplit('.', 1)[0]
+    df.to_csv(settings.MEDIA_ROOT + "/"+ filename + '.csv')
