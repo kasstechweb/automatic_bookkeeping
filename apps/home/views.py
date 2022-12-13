@@ -12,7 +12,7 @@ from .models import Document
 # from django.shortcuts import render  
 from .forms import DocumentForm
 from django.shortcuts import render
-from .functions import td_pdftocsv
+from .functions import td_pdftocsv, get_categories
 
 
 @login_required(login_url="/login/")
@@ -48,7 +48,7 @@ def pages(request):
         html_template = loader.get_template('home/page-500.html')
         return HttpResponse(html_template.render(context, request))
 
-# Upload statement page and post 
+# Upload statement page and go to process statement page 
 @login_required(login_url="/login/")
 def upload_statement(request):
     context = {}
@@ -94,7 +94,7 @@ def upload_statement(request):
         html_template = loader.get_template('home/page-500.html')
         return HttpResponse(html_template.render(context, request))
 
-# Upload statement page and post 
+# process statement page and go to download page 
 @login_required(login_url="/login/")
 def process_statement(request):
     context = {}
@@ -129,16 +129,30 @@ def process_statement(request):
         html_template = loader.get_template('home/page-500.html')
         return HttpResponse(html_template.render(context, request))
 
+# download csv page and go to categories page
 @login_required(login_url="/login/")
 def download_csv(request):
     context = {}
     try:
-        # form = DocumentForm(request.POST, request.FILES)
-        # td_pdftocsv(request)
         return render(request, 'home/download_csv.html')
 
     except template.TemplateDoesNotExist:
+        html_template = loader.get_template('home/page-404.html')
+        return HttpResponse(html_template.render(context, request))
 
+    except:
+        html_template = loader.get_template('home/page-500.html')
+        return HttpResponse(html_template.render(context, request))
+
+# download csv page and go to categories page
+@login_required(login_url="/login/")
+def categories(request):
+    context = {}
+    try:
+        get_categories(request, '')
+        return render(request, 'home/categories.html')
+
+    except template.TemplateDoesNotExist:
         html_template = loader.get_template('home/page-404.html')
         return HttpResponse(html_template.render(context, request))
 

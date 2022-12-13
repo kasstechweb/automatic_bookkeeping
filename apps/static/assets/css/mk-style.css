@@ -116,3 +116,7 @@ span.cc{ color:#6d84b4 } */
     text-transform: none;
     word-wrap: break-word;
 }
+
+/* .tooltip.show {
+    transform: translate3d(15px, 5px, 0)!important;
+} */

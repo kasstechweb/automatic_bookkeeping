@@ -25,7 +25,7 @@
       </div>
       <div class="card-body">
         <!-- <form action="{% url 'process_statement' %}" method="POST" class="post-form"> -->
-          {% csrf_token %}
+          
           <input type="hidden" name="file_id" value="{{ file_id }}">
         <div class="swal2-header">
           <div class="swal2-icon swal2-success swal2-animate-success-icon" style="display: flex;">
@@ -45,6 +45,7 @@
           <div class="row">
             <div class="col text-center">
               <form method="get" action="{{ file_name }}">
+                {% csrf_token %}
                 <button type="submit" class="btn btn-success justify-content-md-center">
                     <span class="btn-label">
                       <i class="material-icons">download</i>

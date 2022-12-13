@@ -9,6 +9,7 @@ import requests
 import pdfplumber
 import pandas as pd
 from collections import namedtuple
+import mysql.connector
 
 def handle_uploaded_file(f):
     print('handling ' + settings.MEDIA_ROOT + f.name)
@@ -34,6 +35,7 @@ def path_and_rename(instance, filename):
     # return the whole path to the file
     return os.path.join(upload_to, filename)
 
+# function to convert td bank pdf to csv file
 def td_pdftocsv(request, file_name):
     current_user = request.user
     Inv = namedtuple('Inv', 'tr_date date description amount')
@@ -79,3 +81,11 @@ def td_pdftocsv(request, file_name):
 
     filename = str(file_name).rsplit('.', 1)[0]
     df.to_csv(settings.MEDIA_ROOT + "/"+ filename + '.csv')
+
+# function to convert td bank pdf to csv file
+def get_categories(request, file_name):
+    # with connection._nodb_connection.cursor() as cursor:
+    #     cursor.execute("SHOW tables;")
+    #     rows = cursor.fetchall()
+    #     print(rows)
+    print('get cat')
