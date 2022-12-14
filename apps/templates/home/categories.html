@@ -46,7 +46,18 @@
               </tr>
             </tfoot>
             <tbody>
-              <!-- test -->
+              
+              <tr>
+                <td>1</td>
+                <td>Transaction desc</td>
+                <td>Bank Charges</td>
+                <td>$5.55</td>
+                <td class="td-actions text-right">
+                  <a href="#" class="btn btn-link btn-info btn-just-icon edit"><i class="material-icons">edit</i></a>
+                  <!-- <a href="#" class="btn btn-link btn-warning btn-just-icon edit"><i class="material-icons">dvr</i></a> -->
+                  <a href="#" class="btn btn-link btn-danger btn-just-icon remove"><i class="material-icons">close</i></a>
+                </td>
+              </tr>
               {% for tr, cat in zipped_data %}
                 <tr>
                   <td>{{ forloop.counter }}</td>
@@ -58,7 +69,7 @@
                   {% endif %}
                   <td>{{ tr.4 }}</td>
                   <td class="td-actions text-right">
-                    <a href="#" class="btn btn-link btn-info btn-just-icon like" ><i class="material-icons">edit</i></a>
+                    <a href="#" class="btn btn-link btn-info btn-just-icon edit" ><i class="material-icons">edit</i></a>
                     <!-- <a href="#" class="btn btn-link btn-warning btn-just-icon edit"><i class="material-icons">dvr</i></a> -->
                     <a href="#" class="btn btn-link btn-danger btn-just-icon remove"><i class="material-icons">close</i></a>
                   </td>
@@ -80,6 +91,63 @@
   </div>
 </div>
 
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Modal title</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+          <i class="material-icons">clear</i>
+        </button>
+      </div>
+      <div class="modal-body">
+        
+        <!-- <div class="form-group bmd-form-group is-filled">
+          <label class="label-control">Datetime Picker</label>
+          <input type="text" class="form-control datetimepicker" value="07/02/2018">
+          <span class="material-input"></span>
+          <span class="material-input"></span>
+        </div> -->
+
+        <form id="TypeValidation" class="form-horizontal" action="" method="">
+          <div class="form-group">
+            <input class="form-control" type="text" name="required" required="true" placeholder="Transaction"/>
+          </div>
+        
+
+      </div>
+
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary btn-link">Save</button>
+        <button type="button" class="btn btn-danger btn-link" data-dismiss="modal">Close</button>
+      </div>
+
+      </form>
+    </div>
+  </div>
+</div>
+
+
+<!-- <form id="TypeValidation" class="form-horizontal" action="" method="">
+    <div class="card-body ">
+      <div class="row">
+        <label class="col-sm-2 col-form-label">Required Text</label>
+        <div class="col-sm-7">
+          <div class="form-group">
+            <input class="form-control" type="text" name="required" required="true" />
+          </div>
+        </div>
+        <label class="col-sm-3 label-on-right">
+          <code>required</code>
+        </label>
+      </div>
+    </div>
+    <div class="card-footer ml-auto mr-auto">
+      <button type="submit" class="btn btn-rose">Validate Inputs</button>
+    </div>
+  </div>
+</form> -->
 {% endblock content %}
 
 <!-- Specific Page JS goes HERE  -->
@@ -87,7 +155,7 @@
 
 <script>
   $(document).ready(function() {
-    $('#datatables').DataTable({
+    var table = $('#datatables').DataTable({
       "pagingType": "full_numbers",
       "lengthMenu": [
         [10, 25, 50, -1],
@@ -100,26 +168,68 @@
       }
     });
 
-    var table = $('#datatable').DataTable();
+    // var table = $('#datatable').DataTable();
 
     // Edit record
     table.on('click', '.edit', function() {
       $tr = $(this).closest('tr');
       var data = table.row($tr).data();
-      alert('You press on Row: ' + data[0] + ' ' + data[1] + ' ' + data[2] + '\'s row.');
+      console.log('You press on Row: ' + data[0] + ' ' + data[1] + ' ' + data[2] + '\'s row.');
     });
 
     // Delete a record
     table.on('click', '.remove', function(e) {
       $tr = $(this).closest('tr');
+      var data = table.row($tr).data();
       table.row($tr).remove().draw();
       e.preventDefault();
+      console.log(data[0])
+      console.log('You deleted Row: ' + data[0] + ' ' + data[1] + ' ' + data[2] + '\'s row.');
+      // console.log(JSON.stringify(data))
+      // var csrftoken = getCookie('csrftoken'); // from https://docs.djangoproject.com/en/1.7/ref/contrib/csrf/#ajax 
+      $.ajax({
+          type: 'POST',
+          beforeSend: function(xhr, settings) {
+              function getCookie(name) {
+                  var cookieValue = null;
+                  if (document.cookie && document.cookie != '') {
+                      var cookies = document.cookie.split(';');
+                      for (var i = 0; i < cookies.length; i++) {
+                          var cookie = jQuery.trim(cookies[i]);
+                          // Does this cookie string begin with the name we want?
+                          if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                              cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                              break;
+                          }
+                      }
+                  }
+                  return cookieValue;
+              }
+              if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+                  // Only send the token to relative URLs i.e. locally.
+                  xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+              }
+          },
+          data: {
+            id: data[0],
+            file_name: "{{ file_name }}"
+          },
+          url: "{% url 'remove_from_csv' %}"
+      }).done(function(data) {
+          console.log(data.deleted + ' images were deleted');
+      }).fail(function(data) {
+          console.log('errors happened: ' + data);
+      });
     });
 
     //Like record
-    table.on('click', '.like', function() {
-      alert('You clicked on Like button');
-    });
+    // table.on('click', '.like', function() {
+    //   console.log('You clicked on Like button');
+    // });
   });
+</script>
+
+<script>
+
 </script>
 {% endblock javascripts %}

@@ -1,9 +1,11 @@
 import os
+from pathlib import Path
 from uuid import uuid4
 from django.conf import settings
 from django.contrib.auth.models import User
 
 import re
+from django.http import JsonResponse
 
 import requests
 import pdfplumber
@@ -101,3 +103,14 @@ def read_csv(file_path_name):
 #         if x[1] in search_str:
 #             return x
 #     return False
+
+def remove_from_csv(request):
+    # print('remove from csv called')
+    # print(request.POST.get('id')) 
+    # print(request.POST.get('file_name')) 
+    csv_file = pd.read_csv(Path(settings.MEDIA_ROOT + '/statements/' +request.POST.get('file_name')))
+    csv_file.drop(int(request.POST.get('id'))-1,axis=0,inplace=True)
+    csv_file.to_csv(Path(settings.MEDIA_ROOT + '/statements/' +request.POST.get('file_name')), index=False)
+    data = {'status': 200,
+            'deleted': 'test'}
+    return JsonResponse(data)

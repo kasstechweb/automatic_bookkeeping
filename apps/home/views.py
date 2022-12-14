@@ -156,25 +156,28 @@ def categories(request):
     if request.method == "POST":
         file_id = request.POST.get('file_id')
         file = Document.objects.get(pk=file_id)
-        filename = str(file.docfile).rsplit('.', 1)[0]
-        filename = Path(settings.MEDIA_ROOT + filename + '.csv')
-        print(filename)
+        file_name = str(file.docfile).rsplit('.', 1)[0]
+        filename = Path(settings.MEDIA_ROOT + file_name + '.csv')
+        # print(file_name)
+        # print(str(file_name).rsplit('/', 1)[1])
         transactions = read_csv(filename)
         del transactions[0]
         sub_categories = DictionarySubcategories.objects.all()
         categories = []
         for r in transactions:
             categories.append(get_sub_category(r[3], sub_categories))
-            print(get_sub_category(r[3], sub_categories))
-        print(categories)
+            # print(get_sub_category(r[3], sub_categories))
+        # print(categories)
         zipped_data = zip(transactions, categories)
         # for i, j in zipped_data:
         #     print(str(i[3]) + ' ' + str(j))
+        file_name = str(file_name).rsplit('/', 1)[1] + '.csv'
         return render(request, 'home/categories.html', 
                 {
                 'categories': categories,
                 'transactions': transactions,
-                'zipped_data': zipped_data
+                'zipped_data': zipped_data,
+                'file_name': file_name
                 })
         # print(rows[1])
         # print('categories post called')
