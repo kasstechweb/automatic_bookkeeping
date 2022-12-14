@@ -10,6 +10,7 @@ import pdfplumber
 import pandas as pd
 from collections import namedtuple
 import csv
+from unidecode import unidecode
 
 # from apps.home.models import DictionaryCategories
 
@@ -64,7 +65,7 @@ def td_pdftocsv(request, file_name):
         if line:
             inv_dt = line.group(1)
             due_dt = line.group(3)
-            inv_amt = line.group(5)
+            inv_amt = unidecode(line.group(5))
             desc = line.group(6)
             line_items.append(Inv(inv_dt, due_dt, inv_amt, desc))
 

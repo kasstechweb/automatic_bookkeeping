@@ -203,7 +203,7 @@ def get_sub_category(search_str, sub_categories):
     # sub_categories = DictionarySubcategories.objects.all()
     search_str = search_str.lower()
     for x in sub_categories:
-        if x.name in search_str:
+        if x.name.lower() in search_str:
             category = DictionaryCategories.objects.get(pk=x.dictionary_category_id)
             return category.name
     return False
