@@ -12,3 +12,18 @@ class Document(models.Model):
     docfile = models.FileField(upload_to=path_and_rename)
     # / 'documents/%Y/%m/%d'
 
+class DictionaryCategories(models.Model):
+    name = models.CharField(max_length=255)
+
+    class Meta:
+        managed = False
+        db_table = 'dictionary_categories'
+
+
+class DictionarySubcategories(models.Model):
+    name = models.CharField(max_length=255)
+    dictionary_category = models.ForeignKey(DictionaryCategories, models.DO_NOTHING)
+
+    class Meta:
+        managed = False
+        db_table = 'dictionary_subcategories'

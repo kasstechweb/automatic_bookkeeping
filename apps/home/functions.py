@@ -9,7 +9,9 @@ import requests
 import pdfplumber
 import pandas as pd
 from collections import namedtuple
-import mysql.connector
+import csv
+
+# from apps.home.models import DictionaryCategories
 
 def handle_uploaded_file(f):
     print('handling ' + settings.MEDIA_ROOT + f.name)
@@ -45,27 +47,16 @@ def td_pdftocsv(request, file_name):
             single_page_text = pdf_page.extract_text(x_tolerance=1, layout=False)
             text = text + '\n' + single_page_text
 
-    # new_vend_re = re.compile(r'^.*DESCRIPTION.*$')
-    # for line in text.split('\n'):
-    #     if new_vend_re.match(line):
-    #         print(line)
-    
-    # for line in text.split('\n'):
-    #     if new_vend_re.match(line):
-    #         vend_num, *vend_name = line.split()
-    #         vend_name = ' '.join(vend_name)
-    #         print(vend_num)
-    #         print(vend_name)
     inv_line_re = re.compile(r'((JAN?|FEB?|MAR?|APR?|MAY|JUN?|JUL?|AUG?|SEP?|OCT?|NOV?|DEC?)+ \d{1,2}) '
                          '((JAN?|FEB?|MAR?|APR?|MAY|JUN?|JUL?|AUG?|SEP?|OCT?|NOV?|DEC?)+ \d{1,2}) '
                          '([^\$]+)+ ([-]?[$]?\d{1,3}(?:,?\d{3})*\.\d{2})'
                         )
 
-    for line in text.split('\n'):
-        line = inv_line_re.search(line)
-        if line:
-            # print(line)
-            print(line.group(1) + ' * ' +line.group(3)+ ' * ' +line.group(5)+ ' * ' +line.group(6) )
+    # for line in text.split('\n'):
+    #     line = inv_line_re.search(line)
+    #     if line:
+    #         # print(line)
+    #         print(line.group(1) + ' * ' +line.group(3)+ ' * ' +line.group(5)+ ' * ' +line.group(6) )
     
     line_items = []
     for line in text.split('\n'):
@@ -82,10 +73,30 @@ def td_pdftocsv(request, file_name):
     filename = str(file_name).rsplit('.', 1)[0]
     df.to_csv(settings.MEDIA_ROOT + "/"+ filename + '.csv')
 
-# function to convert td bank pdf to csv file
-def get_categories(request, file_name):
-    # with connection._nodb_connection.cursor() as cursor:
-    #     cursor.execute("SHOW tables;")
-    #     rows = cursor.fetchall()
-    #     print(rows)
-    print('get cat')
+#function to read csv file
+def read_csv(file_path_name):
+    file = open(file_path_name)
+    csvreader = csv.reader(file)
+    rows = []
+    # d = dict()
+    for row in csvreader:
+        rows.append(row)
+    # print (rows[1])
+    # for r in rows:
+    #     print(r[4]) 
+
+    file.close()
+    return rows
+# # function to convert td bank pdf to csv file
+# def get_categories(request, file_name):
+    
+    
+#     # print(categories)
+#     print('get cat')
+
+# def get_sub_category(search_str, sub_categories):
+#     search_str = search_str.lower()
+#     for x in sub_categories:
+#         if x[1] in search_str:
+#             return x
+#     return False

@@ -26,7 +26,7 @@
       <div class="card-body">
         <!-- <form action="{% url 'process_statement' %}" method="POST" class="post-form"> -->
           
-          <input type="hidden" name="file_id" value="{{ file_id }}">
+        <!-- <input type="hidden" name="file_id" value="{{ file_id }}"> -->
         <div class="swal2-header">
           <div class="swal2-icon swal2-success swal2-animate-success-icon" style="display: flex;">
           <div class="swal2-success-circular-line-left" style="background-color: rgb(255, 255, 255);">
@@ -44,28 +44,42 @@
         <!-- <div class="container"> -->
           <div class="row">
             <div class="col text-center">
-              <form method="get" action="{{ file_name }}">
+              <a class="btn btn-success justify-content-md-center" href="{{ file_name }}"  target="_self" download="converted_statement">
+                <span class="btn-label">
+                  <i class="material-icons">download</i>
+                </span>
+                Download excel sheet
+              </a>
+              <!-- <form method="get" action="{{ file_name }}">
                 {% csrf_token %}
                 <button type="submit" class="btn btn-success justify-content-md-center">
                     <span class="btn-label">
                       <i class="material-icons">download</i>
                     </span>
-                    Download
+                    Download excel sheet
                   <div class="ripple-container"></div>
                 </button>
-              </form>
+              </form> -->
                 <div class="clearfix"></div>
               </div>
             </div>
           <!-- </div> -->
         <!-- </form> -->
+
+        <form action="{% url 'categories' %}" method="POST" class="post-form">
+          {% csrf_token %}
+          <input type="hidden" name="file_id" value="{{ file_id }}">
+
+        <button type="submit" class="btn btn-primary pull-right">Show Categories</button>
+          <div class="clearfix"></div>
+        </form>
         
         <script>
           $(document).ready(function() {
               // mk.showSwal('basic')
             });
         </script>
-      </div>
+      </div><!-- end card body -->
     </div>
   </div>
 </div>

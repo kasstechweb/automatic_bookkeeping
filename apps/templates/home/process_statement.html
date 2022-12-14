@@ -24,7 +24,7 @@
         <!-- <p class="card-category">Processing your state</p> -->
       </div>
       <div class="card-body">
-        <form action="{% url 'process_statement' %}" method="POST" class="post-form">
+        <form action="{% url 'download_csv' %}" method="POST" class="post-form">
           {% csrf_token %}
           <input type="hidden" name="file_id" value="{{ file_id }}">
         <div class="swal2-header">

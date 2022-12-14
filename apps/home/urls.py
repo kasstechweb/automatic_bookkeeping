@@ -1,8 +1,9 @@
 # -*- encoding: utf-8 -*-
 
+from django.conf import settings
 from django.urls import path, re_path
 from apps.home import views
-
+from django.conf.urls.static import static
 # from .views import (
 #     upload_statement,
 # )
@@ -22,3 +23,5 @@ urlpatterns = [
 
     # path('upload_statement/', views.upload_statement, name='upload_statement'),
 ]
+
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

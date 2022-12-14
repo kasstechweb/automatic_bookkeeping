@@ -46,17 +46,26 @@
               </tr>
             </tfoot>
             <tbody>
-              <tr>
-                <td>Tiger Nixon</td>
-                <td>System Architect</td>
-                <td>Edinburgh</td>
-                <td>61</td>
-                <td class="td-actions text-right">
-                  <a href="#" class="btn btn-link btn-info btn-just-icon like" ><i class="material-icons">edit</i></a>
-                  <!-- <a href="#" class="btn btn-link btn-warning btn-just-icon edit"><i class="material-icons">dvr</i></a> -->
-                  <a href="#" class="btn btn-link btn-danger btn-just-icon remove"><i class="material-icons">close</i></a>
-                </td>
-              </tr>
+              <!-- test -->
+              {% for tr, cat in zipped_data %}
+                <tr>
+                  <td>{{ forloop.counter }}</td>
+                  <td>{{ tr.3 }}</td>
+                  {% if cat %}
+                    <td>{{ cat }}</td>
+                  {% else %}
+                    <td></td>
+                  {% endif %}
+                  <td>{{ tr.4 }}</td>
+                  <td class="td-actions text-right">
+                    <a href="#" class="btn btn-link btn-info btn-just-icon like" ><i class="material-icons">edit</i></a>
+                    <!-- <a href="#" class="btn btn-link btn-warning btn-just-icon edit"><i class="material-icons">dvr</i></a> -->
+                    <a href="#" class="btn btn-link btn-danger btn-just-icon remove"><i class="material-icons">close</i></a>
+                  </td>
+                </tr>
+              {% endfor %}
+
+              
             </tbody>
           </table>
         </div>
