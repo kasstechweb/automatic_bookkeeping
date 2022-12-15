@@ -120,3 +120,7 @@ span.cc{ color:#6d84b4 } */
 /* .tooltip.show {
     transform: translate3d(15px, 5px, 0)!important;
 } */
+
+.modal .modal-dialog {
+    margin-top: 2rem!important;
+}

@@ -133,10 +133,11 @@ def download_csv(request):
         td_pdftocsv(request, file_name)
         filename = str(file_name).rsplit('.', 1)[0]
         filename = '/media/' + filename + '.csv'
+        
         return render(request, 'home/download_csv.html', 
                 {
                 'file_name': filename,
-                'file_id': file_id
+                'file_id': file_id,
                 })
     try:
         return render(request, 'home/download_csv.html')
@@ -172,6 +173,7 @@ def categories(request):
         # for i, j in zipped_data:
         #     print(str(i[3]) + ' ' + str(j))
         file_name = str(file_name).rsplit('/', 1)[1] + '.csv'
+        categories = DictionaryCategories.objects.all()
         return render(request, 'home/categories.html', 
                 {
                 'categories': categories,
