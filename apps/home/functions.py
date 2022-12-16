@@ -128,6 +128,25 @@ def remove_from_csv(request):
             'deleted': 'test'}
     return JsonResponse(data)
 
+def edit_csv_and_dictionary(request):
+    print('edit csv called')
+    print(request.POST.get('id'))
+    csv_file = pd.read_csv(Path(settings.MEDIA_ROOT + '/statements/' +request.POST.get('file_name')))
+    csv_file.at[int(request.POST.get('id'))-1,'description'] = request.POST.get('transaction')
+    csv_file.at[int(request.POST.get('id'))-1,'amount'] = request.POST.get('amount')
+    csv_file.at[int(request.POST.get('id'))-1,'category'] = request.POST.get('category')
+    csv_file.to_csv(Path(settings.MEDIA_ROOT + '/statements/' +request.POST.get('file_name')), index=False)
+    # add to dictionary db
+    category = DictionaryCategories.objects.get(name=request.POST.get('category'))
+    print(category.pk)
+    print(request.POST.get('transaction'))
+    sub_category = DictionarySubcategories.objects.create(name=request.POST.get('transaction'), dictionary_category_id = category.pk)
+    sub_category.save()
+    data = {'status': 200,
+            'msg': 'edit success!'
+            }
+    return JsonResponse(data)
+
 def edit_csv(request):
     print('edit csv called')
     print(request.POST.get('id'))

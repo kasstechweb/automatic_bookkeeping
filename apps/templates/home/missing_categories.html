@@ -177,49 +177,15 @@
     // });
 
     // Delete a record
-    table.on('click', '.remove', function(e) {
-      $tr = $(this).closest('tr');
-      var data = table.row($tr).data();
-      table.row($tr).remove().draw();
-      e.preventDefault();
-      console.log(data[0])
-      console.log('You deleted Row: ' + data[0] + ' ' + data[1] + ' ' + data[2] + '\'s row.');
-      // console.log(JSON.stringify(data))
-      // var csrftoken = getCookie('csrftoken'); // from https://docs.djangoproject.com/en/1.7/ref/contrib/csrf/#ajax 
-      $.ajax({
-          type: 'POST',
-          beforeSend: function(xhr, settings) {
-              function getCookie(name) {
-                  var cookieValue = null;
-                  if (document.cookie && document.cookie != '') {
-                      var cookies = document.cookie.split(';');
-                      for (var i = 0; i < cookies.length; i++) {
-                          var cookie = jQuery.trim(cookies[i]);
-                          // Does this cookie string begin with the name we want?
-                          if (cookie.substring(0, name.length + 1) == (name + '=')) {
-                              cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                              break;
-                          }
-                      }
-                  }
-                  return cookieValue;
-              }
-              if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
-                  // Only send the token to relative URLs i.e. locally.
-                  xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
-              }
-          },
-          data: {
-            id: data[0],
-            file_name: "{{ file_name }}"
-          },
-          url: "{% url 'remove_from_csv' %}"
-      }).done(function(data) {
-          console.log(data.deleted + ' images were deleted');
-      }).fail(function(data) {
-          console.log('errors happened: ' + data);
-      });
-    });
+    // table.on('click', '.remove', function(e) {
+    //   $tr = $(this).closest('tr');
+    //   var data = table.row($tr).data();
+    //   table.row($tr).remove().draw();
+    //   e.preventDefault();
+    //   console.log(data[0])
+    //   console.log('You deleted Row: ' + data[0] + ' ' + data[1] + ' ' + data[2] + '\'s row.');
+      
+    // });
 
     //Like record
     // table.on('click', '.like', function() {
@@ -271,7 +237,7 @@
             amount: amount,
             file_name: "{{ file_name }}"
           },
-          url: "{% url 'edit_csv' %}"
+          url: "{% url 'edit_csv_and_dictionary' %}"
       }).done(function(data) {
           $('#myModal').modal('toggle');
           var rowid = '#row_'+row_id;
