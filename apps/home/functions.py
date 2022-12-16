@@ -13,6 +13,9 @@ import pandas as pd
 from collections import namedtuple
 import csv
 from unidecode import unidecode
+from .models import DictionaryCategories, DictionarySubcategories
+
+# from .views import get_category, get_all_sub_categories
 
 # from apps.home.models import DictionaryCategories
 
@@ -23,27 +26,28 @@ def handle_uploaded_file(f):
         destination.write(chunk)
     destination.close()
 
-def path_and_rename(instance, filename):
-    upload_to = "statements"
-    # print(instance)
-    # ext = filename.split('.')[-1]
-    # if filename.split('.')[-1] != 'pdf':
-        # print('error pdf')
-        # msg = 'error pdf'
-    ext = 'pdf'
-    # get filename
-    if instance.pk:
-        filename = '{}.{}'.format(instance.pk, ext)
-    else:
-        # set filename as random string
-        filename = '{}.{}'.format(uuid4().hex, ext)
-    # return the whole path to the file
-    return os.path.join(upload_to, filename)
+# def path_and_rename(instance, filename):
+#     upload_to = "statements"
+#     # print(instance)
+#     # ext = filename.split('.')[-1]
+#     # if filename.split('.')[-1] != 'pdf':
+#         # print('error pdf')
+#         # msg = 'error pdf'
+#     ext = 'pdf'
+#     # get filename
+#     if instance.pk:
+#         filename = '{}.{}'.format(instance.pk, ext)
+#     else:
+#         # set filename as random string
+#         filename = '{}.{}'.format(uuid4().hex, ext)
+#     # return the whole path to the file
+#     return os.path.join(upload_to, filename)
 
 # function to convert td bank pdf to csv file
 def td_pdftocsv(request, file_name):
     current_user = request.user
-    Inv = namedtuple('Inv', 'tr_date date description amount')
+    missing_category = False
+    Inv = namedtuple('Inv', 'tr_date date description amount category')
     text = '' # new line
     with pdfplumber.open(settings.MEDIA_ROOT + "/" + str(file_name)) as pdf:
         for pdf_page in pdf.pages:
@@ -67,14 +71,19 @@ def td_pdftocsv(request, file_name):
         if line:
             inv_dt = line.group(1)
             due_dt = line.group(3)
-            inv_amt = unidecode(line.group(5))
-            desc = line.group(6)
-            line_items.append(Inv(inv_dt, due_dt, inv_amt, desc))
+            desc = unidecode(line.group(5))
+            inv_amt = line.group(6)
+            sub_categories = DictionarySubcategories.objects.all()
+            category = get_category(desc, sub_categories)
+            if category == False:
+                missing_category = True
+            line_items.append(Inv(inv_dt, due_dt, desc, inv_amt, category))
 
     df = pd.DataFrame(line_items)
 
     filename = str(file_name).rsplit('.', 1)[0]
     df.to_csv(settings.MEDIA_ROOT + "/"+ filename + '.csv')
+    return missing_category
 
 #function to read csv file
 def read_csv(file_path_name):
@@ -90,12 +99,16 @@ def read_csv(file_path_name):
 
     file.close()
     return rows
-# # function to convert td bank pdf to csv file
-# def get_categories(request, file_name):
-    
-    
-#     # print(categories)
-#     print('get cat')
+
+
+def get_category(search_str, sub_categories):
+    # sub_categories = DictionarySubcategories.objects.all()
+    search_str = search_str.lower()
+    for x in sub_categories:
+        if x.name.lower() in search_str:
+            category = DictionaryCategories.objects.get(pk=x.dictionary_category_id)
+            return category.name
+    return False
 
 # def get_sub_category(search_str, sub_categories):
 #     search_str = search_str.lower()
@@ -113,4 +126,17 @@ def remove_from_csv(request):
     csv_file.to_csv(Path(settings.MEDIA_ROOT + '/statements/' +request.POST.get('file_name')), index=False)
     data = {'status': 200,
             'deleted': 'test'}
+    return JsonResponse(data)
+
+def edit_csv(request):
+    print('edit csv called')
+    print(request.POST.get('id'))
+    csv_file = pd.read_csv(Path(settings.MEDIA_ROOT + '/statements/' +request.POST.get('file_name')))
+    csv_file.at[int(request.POST.get('id'))-1,'description'] = request.POST.get('transaction')
+    csv_file.at[int(request.POST.get('id'))-1,'amount'] = request.POST.get('amount')
+    csv_file.at[int(request.POST.get('id'))-1,'category'] = request.POST.get('category')
+    csv_file.to_csv(Path(settings.MEDIA_ROOT + '/statements/' +request.POST.get('file_name')), index=False)
+    data = {'status': 200,
+            'msg': 'edit success!'
+            }
     return JsonResponse(data)

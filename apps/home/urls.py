@@ -4,7 +4,7 @@ from django.conf import settings
 from django.urls import path, re_path
 from apps.home import views
 from django.conf.urls.static import static
-from .functions import remove_from_csv
+from .functions import remove_from_csv, edit_csv
 # from .views import (
 #     upload_statement,
 # )
@@ -23,6 +23,7 @@ urlpatterns = [
     path('categories/', views.categories, name='categories'),
 
     path('remove_from_csv/', remove_from_csv, name='remove_from_csv'),
+    path('edit_csv/', edit_csv, name='edit_csv'),
 
     # path('upload_statement/', views.upload_statement, name='upload_statement'),
 ]

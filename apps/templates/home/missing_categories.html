@@ -19,8 +19,8 @@
 <div class="row justify-content-md-center">
   <div class="col-md-10">
     <div class="card">
-      <div class="card-header card-header-primary">
-        <h4 class="card-title">Categories</h4>
+      <div class="card-header card-header-danger">
+        <h4 class="card-title">uncategorised transactions, select category for each transaction below</h4>
         <!-- <p class="card-category">Processing your state</p> -->
       </div>
       <div class="card-body">
@@ -47,23 +47,43 @@
             </tfoot>
             <tbody>
               {% for tr in transactions %}
-                <tr id="row_{{ forloop.counter }}">
-                  <td>{{ forloop.counter }}</td>
-                  <td>{{ tr.3 }}</td>
-                  <td>{{ tr.5 }}</td>
-                  <td>{{ tr.4 }}</td>
-                  <td class="td-actions text-right">
-                    <a href="#" class="btn btn-link btn-info btn-just-icon edit"  data-toggle="modal" data-target="#myModal"><i class="material-icons">edit</i></a>
-                    <a href="#" class="btn btn-link btn-danger btn-just-icon remove"><i class="material-icons">close</i></a>
-                  </td>
-                </tr>
+                {% if tr.5 == 'False' %}
+                  <tr id="row_{{ forloop.counter }}">
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ tr.3 }}</td>
+                    <td></td>
+                    <td>{{ tr.4 }}</td>
+                    <td class="td-actions text-right">
+                      <a href="#" class="btn btn-link btn-info btn-just-icon edit"  data-toggle="modal" data-target="#myModal"><i class="material-icons">edit</i></a>
+                    </td>
+                  </tr>
+                {% endif %}
               {% endfor %}
-
-              
             </tbody>
           </table>
         </div>
 
+        <div class="row">
+          <div class="col-6">
+            <a class="btn btn-success" href="{{ file_name_download }}"  target="_self" download="converted_statement">
+              <span class="btn-label">
+                <i class="material-icons">download</i>
+              </span>
+              Download excel sheet
+            </a>
+            <div class="clearfix"></div>
+          </div>
+          <div class="col-6">
+            <form action="{% url 'categories' %}" method="POST" class="post-form">
+              {% csrf_token %}
+              <input type="hidden" name="file_id" value="{{ file_id }}">
+
+              <button type="submit" class="btn btn-primary pull-right">Show Categories Report</button>
+              <div class="clearfix"></div>
+            </form>
+          </div>
+        </div>
+      
       </div> <!-- end card body -->
     </div>
   </div>
@@ -80,31 +100,34 @@
       </div>
       <div class="modal-body">
 
-          <form id="modal_form" class="form-horizontal" action="" method="">
-            {% csrf_token %}
-            <input type="hidden" name="row_id" id="row_id">
-            <div class="form-group">
-              <input id="transaction" class="form-control" type="text" name="transaction" required="true" placeholder="Transaction"/>
-            </div>
-
-            <div class="form-group">
-              <select class="selectpicker" id="category" name="category" data-width="100%" data-live-search="true" data-style="btn btn-primary " title="Select Categories">
-                {% for cat in categories %}
-                  <option value="{{ cat.name }}">{{ cat.name }}</option>
-                {% endfor %}
-              </select>
-            </div>
-
-            <div class="form-group">
-              <input id="amount" class="form-control" type="text" name="amount" required="true" placeholder="Amount"/>
-            </div>
-
-          <div class="modal-footer">
-            <button type="button" class="btn btn-primary btn-link" onclick="edit_csv_ajax()">Save</button>
-            <button type="button" class="btn btn-danger btn-link" data-dismiss="modal">Close</button>
+        <form id="modal_form" class="form-horizontal" action="" method="">
+          {% csrf_token %}
+          <input type="hidden" name="row_id" id="row_id">
+          <div class="form-group">
+            <input id="transaction" class="form-control" type="text" name="transaction" required="true" placeholder="Transaction"/>
           </div>
-        </form>
 
+          <div class="form-group">
+            <select class="selectpicker" id="category" name="category" data-width="100%" data-live-search="true" data-style="btn btn-primary " title="Select Categories">
+              {% for cat in categories %}
+                <option value="{{ cat.name }}">{{ cat.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-group">
+            <input id="amount" class="form-control" type="text" name="amount" required="true" placeholder="Amount"/>
+          </div>
+
+      
+
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary btn-link" onclick="edit_csv_ajax()">Save</button>
+        <button type="button" class="btn btn-danger btn-link" data-dismiss="modal">Close</button>
+      </div>
+
+      </form>
       </div>
     </div>
   </div>
@@ -208,7 +231,7 @@
 </script>
 
 <script>
-    function edit_csv_ajax(){
+  function edit_csv_ajax(){
     row_id = $('#row_id').val();
     transaction = $('#transaction').val();
     category = $('#category').val()
@@ -252,11 +275,12 @@
       }).done(function(data) {
           $('#myModal').modal('toggle');
           var rowid = '#row_'+row_id;
+          $("#datatables tbody").find(rowid).remove();
           mk.showNotification('top','right', 'success', data.msg);
+
       }).fail(function(data) {
           console.log('errors happened: ' + data);
       });
   }
-</script>
 </script>
 {% endblock javascripts %}

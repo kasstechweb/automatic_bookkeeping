@@ -130,15 +130,37 @@ def download_csv(request):
         file_id = request.POST.get('file_id')
         file = Document.objects.get(pk=file_id)
         file_name = file.docfile
-        td_pdftocsv(request, file_name)
-        filename = str(file_name).rsplit('.', 1)[0]
-        filename = '/media/' + filename + '.csv'
-        
-        return render(request, 'home/download_csv.html', 
+        check_missing_category = td_pdftocsv(request, file_name)
+        if check_missing_category == True: # there is a missing category ask user to add it before downloading csv
+            print('there is missing category')
+            file_id = request.POST.get('file_id')
+            file = Document.objects.get(pk=file_id)
+            file_name = str(file.docfile).rsplit('.', 1)[0]
+            filename = Path(settings.MEDIA_ROOT + file_name + '.csv')
+            # print(file_name)
+            # print(str(file_name).rsplit('/', 1)[1])
+            transactions = read_csv(filename)
+            file_name = str(file_name).rsplit('/', 1)[1] + '.csv'
+            file_name_download = '/media/statements/' + file_name
+            del transactions[0]
+            categories = DictionaryCategories.objects.all()
+            return render(request, 'home/missing_categories.html', 
                 {
-                'file_name': filename,
+                'transactions': transactions,
+                'file_name': file_name,
+                'categories': categories,
                 'file_id': file_id,
+                'file_name_download': file_name_download
                 })
+        else: # there is no missing category
+            filename = str(file_name).rsplit('.', 1)[0]
+            filename = '/media/' + filename + '.csv'
+            
+            return render(request, 'home/download_csv.html', 
+                    {
+                    'file_name': filename,
+                    'file_id': file_id,
+                    })
     try:
         return render(request, 'home/download_csv.html')
 
@@ -163,13 +185,13 @@ def categories(request):
         # print(str(file_name).rsplit('/', 1)[1])
         transactions = read_csv(filename)
         del transactions[0]
-        sub_categories = DictionarySubcategories.objects.all()
-        categories = []
-        for r in transactions:
-            categories.append(get_sub_category(r[3], sub_categories))
-            # print(get_sub_category(r[3], sub_categories))
-        # print(categories)
-        zipped_data = zip(transactions, categories)
+        # sub_categories = DictionarySubcategories.objects.all()
+        # categories = []
+        # for r in transactions: # for each row in csv file
+        #     categories.append(get_category(r[3], sub_categories))
+        #     # print(get_sub_category(r[3], sub_categories))
+        # # print(categories)
+        # zipped_data = zip(transactions, categories)
         # for i, j in zipped_data:
         #     print(str(i[3]) + ' ' + str(j))
         file_name = str(file_name).rsplit('/', 1)[1] + '.csv'
@@ -178,7 +200,7 @@ def categories(request):
                 {
                 'categories': categories,
                 'transactions': transactions,
-                'zipped_data': zipped_data,
+                # 'zipped_data': zipped_data,
                 'file_name': file_name
                 })
         # print(rows[1])
@@ -204,11 +226,15 @@ def categories(request):
         html_template = loader.get_template('home/page-500.html')
         return HttpResponse(html_template.render(context, request))
 
-def get_sub_category(search_str, sub_categories):
-    # sub_categories = DictionarySubcategories.objects.all()
-    search_str = search_str.lower()
-    for x in sub_categories:
-        if x.name.lower() in search_str:
-            category = DictionaryCategories.objects.get(pk=x.dictionary_category_id)
-            return category.name
-    return False
+# def get_category(search_str, sub_categories):
+#     # sub_categories = DictionarySubcategories.objects.all()
+#     search_str = search_str.lower()
+#     for x in sub_categories:
+#         if x.name.lower() in search_str:
+#             category = DictionaryCategories.objects.get(pk=x.dictionary_category_id)
+#             return category.name
+#     return False
+
+# def get_all_sub_categories():
+#     sub_categories = DictionarySubcategories.objects.all()
+#     return sub_categories
