@@ -136,6 +136,44 @@ def rbc_pdftocsv(request, file_name):
     df.to_csv(settings.MEDIA_ROOT + "/"+ filename + '.csv')
     return missing_category
 
+# function to convert atb bank pdf to csv file
+def atb_pdftocsv(request, file_name):
+    missing_category = False
+    Inv = namedtuple('Inv', 'date_charged date_posted description amount category')
+    text = '' # new line
+    with pdfplumber.open(settings.MEDIA_ROOT + "/" + str(file_name)) as pdf:
+        for pdf_page in pdf.pages:
+            single_page_text = pdf_page.extract_text(x_tolerance=1, layout=False)
+            text = text + '\n' + single_page_text
+
+    inv_line_re = re.compile(r'((Jan?|Feb?|Mar?|Apr?|May|Jun?|Jul?|Aug?|Sep?|Oct?|Nov?|Dec?)\s\d{1,2})\s'
+                                '((Jan?|Feb?|Mar?|Apr?|May|Jun?|Jul?|Aug?|Sep?|Oct?|Nov?|Dec?)\s\d{1,2})\s'
+                                '([a-zA-Z].+)\s(\d{1,3}(?:,?\d{3})*\.\d{2})$'
+                            )
+
+    line_items = []
+    for line in text.split('\n'):
+        restart = False
+        line = inv_line_re.search(line)
+        if line:
+            
+            date_charged = line.group(1)
+            date_posted = line.group(3)
+            desc = line.group(5)
+            amount = line.group(6)
+
+            sub_categories = DictionarySubcategories.objects.all()
+            category = get_category(desc, sub_categories)
+            if category == False:
+                missing_category = True
+
+            line_items.append(Inv(date_charged, date_posted, desc, amount, category))
+
+    df = pd.DataFrame(line_items)
+
+    filename = str(file_name).rsplit('.', 1)[0]
+    df.to_csv(settings.MEDIA_ROOT + "/"+ filename + '.csv')
+    return missing_category
 
 #function to read csv file
 def read_csv(file_path_name):
