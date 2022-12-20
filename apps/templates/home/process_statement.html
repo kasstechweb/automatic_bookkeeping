@@ -27,6 +27,7 @@
         <form action="{% url 'download_csv' %}" method="POST" class="post-form">
           {% csrf_token %}
           <input type="hidden" name="file_id" value="{{ file_id }}">
+          <input type="hidden" name="bank" value="{{ bank }}">
         <div class="swal2-header">
           <div class="swal2-icon swal2-success swal2-animate-success-icon" style="display: flex;">
           <div class="swal2-success-circular-line-left" style="background-color: rgb(255, 255, 255);">

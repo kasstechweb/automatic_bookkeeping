@@ -69,8 +69,9 @@
         <form action="{% url 'categories' %}" method="POST" class="post-form">
           {% csrf_token %}
           <input type="hidden" name="file_id" value="{{ file_id }}">
-
-        <button type="submit" class="btn btn-primary pull-right">Show Categories</button>
+          <input type="hidden" name="bank" value="{{ bank }}">
+          
+          <button type="submit" class="btn btn-primary pull-right">Show Categories</button>
           <div class="clearfix"></div>
         </form>
         

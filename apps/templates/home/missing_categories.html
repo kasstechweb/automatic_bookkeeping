@@ -33,6 +33,9 @@
                 <th>Transaction</th>
                 <th>Category</th>
                 <th>Amount</th>
+                {% if bank == 'rbc'%}
+                  <th>Balance</th>
+                {% endif %}
                 <th class="disabled-sorting text-right">Actions</th>
               </tr>
             </thead>
@@ -42,6 +45,9 @@
                 <th>Transaction</th>
                 <th>Category</th>
                 <th>Amount</th>
+                {% if bank == 'rbc'%}
+                  <th>Balance</th>
+                {% endif %}
                 <th class="text-right">Actions</th>
               </tr>
             </tfoot>
@@ -53,6 +59,13 @@
                     <td>{{ tr.3 }}</td>
                     <td></td>
                     <td>{{ tr.4 }}</td>
+                    {% if bank == 'rbc' %}
+                      {% if tr.6 != 'None'%}
+                        <td>{{ tr.6 }}</td>
+                      {% else %}
+                        <td></td>
+                      {% endif %}
+                    {% endif %}
                     <td class="td-actions text-right">
                       <a href="#" class="btn btn-link btn-info btn-just-icon edit"  data-toggle="modal" data-target="#myModal"><i class="material-icons">edit</i></a>
                     </td>
@@ -77,6 +90,7 @@
             <form action="{% url 'categories' %}" method="POST" class="post-form">
               {% csrf_token %}
               <input type="hidden" name="file_id" value="{{ file_id }}">
+              <input type="hidden" name="bank" value="{{ bank }}">
 
               <button type="submit" class="btn btn-primary pull-right">Show Categories Report</button>
               <div class="clearfix"></div>

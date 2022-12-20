@@ -85,6 +85,58 @@ def td_pdftocsv(request, file_name):
     df.to_csv(settings.MEDIA_ROOT + "/"+ filename + '.csv')
     return missing_category
 
+# function to convert rbc bank pdf to csv file
+def rbc_pdftocsv(request, file_name):
+    missing_category = False
+    Inv = namedtuple('Inv', 'ext_date date description amount category balance')
+    text = '' # new line
+    with pdfplumber.open(settings.MEDIA_ROOT + "/" + str(file_name)) as pdf:
+        for pdf_page in pdf.pages:
+            single_page_text = pdf_page.extract_text(x_tolerance=1, layout=False)
+            text = text + '\n' + single_page_text
+
+    inv_line_re = re.compile(r'(\d{1,2}\sJan?|Feb?|Mar?|Apr?|May|Jun?|Jul?|Aug?|Sep?|Oct?|Nov?|Dec?)?\s?'
+                         '([a-zA-Z]{3}.+)\s(\d{1,3}\.\d{2})\s?(\d{1,3}(?:,?\d{3})*\.\d{2})*$'
+                        )
+
+    ignore_list = ['Opening Balance', 'Total withdrawals', 'Total deposits', 'Balance']
+
+    line_items = []
+    for line in text.split('\n'):
+        restart = False
+        line = inv_line_re.search(line)
+        if line:
+            # print(line)
+            # for x in ignore_list:
+                # print(x)
+            for item in ignore_list:
+                if str(line.group(2)).find(item) != -1:
+                    # print(item)
+                    restart = True
+                    break
+            if restart:
+                continue
+            
+            ext_date = ''
+            date = str(line.group(1))
+            desc = line.group(2)
+            amount = str(line.group(3))
+            balance = str(line.group(4))
+
+            sub_categories = DictionarySubcategories.objects.all()
+            category = get_category(desc, sub_categories)
+            if category == False:
+                missing_category = True
+
+            line_items.append(Inv(ext_date, date, desc, amount, category, balance))
+
+    df = pd.DataFrame(line_items)
+
+    filename = str(file_name).rsplit('.', 1)[0]
+    df.to_csv(settings.MEDIA_ROOT + "/"+ filename + '.csv')
+    return missing_category
+
+
 #function to read csv file
 def read_csv(file_path_name):
     file = open(file_path_name)

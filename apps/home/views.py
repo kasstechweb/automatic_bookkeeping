@@ -13,7 +13,7 @@ from .models import DictionaryCategories, DictionarySubcategories, Document
 # from django.shortcuts import render  
 from .forms import DocumentForm
 from django.shortcuts import render
-from .functions import td_pdftocsv, read_csv
+from .functions import td_pdftocsv, rbc_pdftocsv, read_csv
 
 
 @login_required(login_url="/login/")
@@ -60,6 +60,7 @@ def upload_statement(request):
         
         if form.is_valid():
             # print(request.POST.get('bank'))
+            bank = request.POST.get('bank')
             # print(request.FILES)
             if request.FILES['docfile'].name.split('.')[-1] != 'pdf':
                 # print('error pfd')
@@ -73,7 +74,8 @@ def upload_statement(request):
                 return render(request, 'home/process_statement.html', 
                     {
                     'user_id': current_user.id,
-                    'file_id': newdoc.pk
+                    'file_id': newdoc.pk, 
+                    'bank': bank
                     })
         # handle_uploaded_file(request.FILES['statement_file'])
         # statement_file = request.FILES['statement_file']
@@ -130,7 +132,15 @@ def download_csv(request):
         file_id = request.POST.get('file_id')
         file = Document.objects.get(pk=file_id)
         file_name = file.docfile
-        check_missing_category = td_pdftocsv(request, file_name)
+
+        # check banks
+        bank = request.POST.get('bank')
+        print('bank is : ' + bank)
+        if bank == 'td':
+            check_missing_category = td_pdftocsv(request, file_name)
+        elif bank == 'rbc':
+            check_missing_category = rbc_pdftocsv(request, file_name)
+        
         if check_missing_category == True: # there is a missing category ask user to add it before downloading csv
             print('there is missing category')
             file_id = request.POST.get('file_id')
@@ -150,7 +160,8 @@ def download_csv(request):
                 'file_name': file_name,
                 'categories': categories,
                 'file_id': file_id,
-                'file_name_download': file_name_download
+                'file_name_download': file_name_download,
+                'bank': bank
                 })
         else: # there is no missing category
             filename = str(file_name).rsplit('.', 1)[0]
@@ -160,6 +171,7 @@ def download_csv(request):
                     {
                     'file_name': filename,
                     'file_id': file_id,
+                    'bank': bank
                     })
     try:
         return render(request, 'home/download_csv.html')
@@ -196,12 +208,15 @@ def categories(request):
         #     print(str(i[3]) + ' ' + str(j))
         file_name = str(file_name).rsplit('/', 1)[1] + '.csv'
         categories = DictionaryCategories.objects.all()
+        bank = request.POST.get('bank')
+        print('bank from categories : ' + str(bank))
         return render(request, 'home/categories.html', 
                 {
                 'categories': categories,
                 'transactions': transactions,
                 # 'zipped_data': zipped_data,
-                'file_name': file_name
+                'file_name': file_name,
+                'bank': bank
                 })
         # print(rows[1])
         # print('categories post called')
