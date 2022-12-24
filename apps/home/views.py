@@ -11,7 +11,7 @@ from django.conf import settings
 from .models import DictionaryCategories, DictionarySubcategories, Document
 
 # from django.shortcuts import render  
-from .forms import DocumentForm
+from .forms import DocumentForm, DocumentCSVForm
 from django.shortcuts import render
 from .functions import td_pdftocsv, rbc_pdftocsv, atb_pdftocsv, servus_pdftocsv, scotia_pdftocsv, read_csv
 
@@ -52,7 +52,7 @@ def pages(request):
 # Upload statement page and go to process statement page 
 @login_required(login_url="/login/")
 def upload_statement(request):
-    context = {}
+    context = {'segment': 'upload_statement'}
     msg = ''
     current_user = request.user
     if request.method == "POST":
@@ -86,7 +86,7 @@ def upload_statement(request):
         # html_template = loader.get_template('home/upload_statement.html' )
         # return HttpResponse(html_template.render(context, request))
         form = DocumentForm(request.POST, request.FILES)
-        return render(request, 'home/upload_statement.html',{'form': form, 'msg':msg})
+        return render(request, 'home/upload_statement.html', {'segment': 'upload_statement' ,'form': form, 'msg':msg})
 
     except template.TemplateDoesNotExist:
 
@@ -247,15 +247,46 @@ def categories(request):
         html_template = loader.get_template('home/page-500.html')
         return HttpResponse(html_template.render(context, request))
 
-# def get_category(search_str, sub_categories):
-#     # sub_categories = DictionarySubcategories.objects.all()
-#     search_str = search_str.lower()
-#     for x in sub_categories:
-#         if x.name.lower() in search_str:
-#             category = DictionaryCategories.objects.get(pk=x.dictionary_category_id)
-#             return category.name
-#     return False
 
-# def get_all_sub_categories():
-#     sub_categories = DictionarySubcategories.objects.all()
-#     return sub_categories
+# Upload csv statement page and go to process statement page 
+@login_required(login_url="/login/")
+def upload_csv_statement(request):
+    context = {}
+    msg = ''
+    current_user = request.user
+    if request.method == "POST":
+        form = DocumentForm(request.POST, request.FILES)
+        
+        if form.is_valid():
+            # print(request.POST.get('bank'))
+            bank = request.POST.get('bank')
+            # print(request.FILES)
+            if request.FILES['docfile'].name.split('.')[-1] != 'csv':
+                # print('error pfd')
+                msg = 'Unsupported file extension, please upload a .csv statement'
+            else:
+                newdoc = Document(docfile = request.FILES['docfile'])
+                newdoc.submitter = request.user
+                # print(newdoc)
+                newdoc.save()
+                # print(newdoc.docfile)
+                return render(request, 'home/process_csv_statement.html', 
+                    {
+                    'user_id': current_user.id,
+                    'file_id': newdoc.pk, 
+                    'bank': bank
+                    })
+    try:
+        form = DocumentCSVForm(request.POST, request.FILES)
+        return render(request, 'home/upload_csv_statement.html',{'segment': 'upload_csv_statement' ,'form': form, 'msg':msg})
+
+    except template.TemplateDoesNotExist:
+
+        html_template = loader.get_template('home/page-404.html')
+        return HttpResponse(html_template.render(context, request))
+
+    except:
+        html_template = loader.get_template('home/page-500.html')
+        return HttpResponse(html_template.render(context, request))
+
+

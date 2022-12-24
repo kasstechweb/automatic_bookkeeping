@@ -1,0 +1,81 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Upload csv statement  {% endblock %} 
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}
+  <link rel="stylesheet" href="/static/assets/Fileinput.less">
+{% endblock stylesheets %}
+
+{% block content %}
+{% if msg %}
+  <script>
+    $(document).ready(function() {
+      mk.showNotification('top','right', 'danger', '{{ msg | safe }}');
+    });
+  </script>
+{% endif %}  
+
+<div class="row justify-content-md-center">
+  <div class="col-md-10">
+    <div class="card">
+      <div class="card-header card-header-primary">
+        <h4 class="card-title">Upload Statement</h4>
+        <p class="card-category">select your bank and upload a statement</p>
+      </div>
+      <div class="card-body">
+        <form action="." method="POST" class="post-form" enctype="multipart/form-data">
+          {% csrf_token %}
+          <!-- <input type="text" name="test" value="testv"> -->
+          <div class="row">
+            <div class="col">
+              <h4>Select your Bank:  </h4>
+              <div class="cc-selector">
+                  <input id="td" type="radio" name="bank" value="td" />
+                  <label class="drinkcard-cc td" for="td"></label>
+                  <input id="atb" type="radio" name="bank" value="atb" />
+                  <label class="drinkcard-cc atb"for="atb"></label>
+                  <input id="cibc" type="radio" name="bank" value="cibc" />
+                  <label class="drinkcard-cc cibc" for="cibc"></label>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col">
+              <h4>Upload your bank statement:  </h4>
+              <div class="fileinput fileinput-new input-group" data-provides="fileinput">
+                <div class="mk-form-control" data-trigger="fileinput">
+                  <span class="fileinput-filename"></span>
+                </div>
+                <span class="input-group-append">
+                  <span class="mk-input-group-text fileinput-exists" data-dismiss="fileinput">
+                    Remove
+                  </span>
+              
+                  <span class="mk-input-group-text btn-file">
+                    <span class="fileinput-new">Select file</span>
+                    <span class="fileinput-exists">Change</span>
+                    <!-- <input type="file" name="statement_file" accept="application/pdf"> -->
+                    {{ form.docfile  }}
+                  </span>
+                </span>
+              </div>
+              
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary pull-right">Next</button>
+          <div class="clearfix"></div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+
+  
+{% endblock javascripts %}

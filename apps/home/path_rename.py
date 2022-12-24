@@ -11,7 +11,8 @@ def path_and_rename(instance, filename):
     # if filename.split('.')[-1] != 'pdf':
         # print('error pdf')
         # msg = 'error pdf'
-    ext = 'pdf'
+    ext = filename.split('.')[-1]
+    # ext = 'pdf'
     # get filename
     if instance.pk:
         filename = '{}.{}'.format(instance.pk, ext)

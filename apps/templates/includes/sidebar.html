@@ -15,13 +15,19 @@
               <p>Dashboard</p>
             </a>
           </li>
-          <li class="nav-item {% if 'upload-statement' in segment %} active {% endif %}">
+          <li class="nav-item {% if 'upload_statement' in segment %} active {% endif %}">
             <a class="nav-link" href="/upload_statement">
               <i class="material-icons">upload</i>
-              <p>Upload statement</p>
+              <p>Upload pdf statement</p>
             </a>
           </li>
-          <li class="nav-item {% if 'process-statement' in segment %} active {% endif %}">
+          <li class="nav-item {% if 'upload_csv_statement' in segment %} active {% endif %}">
+            <a class="nav-link" href="/upload_csv_statement">
+              <i class="material-icons">description</i>
+              <p>Upload csv statement</p>
+            </a>
+          </li>
+          <!-- <li class="nav-item {% if 'process-statement' in segment %} active {% endif %}">
             <a class="nav-link" href="/process_statement">
               <i class="material-icons">delete</i>
               <p>process statement</p>
@@ -38,7 +44,9 @@
               <i class="material-icons">delete</i>
               <p>categories</p>
             </a>
-          </li>
+          </li> -->
+
+          <!-- segment : {{ segment }} -->
           <!--
           <li class="nav-item {% if 'page-user' in segment %} active {% endif %}">
             <a class="nav-link" href="/page-user.html">

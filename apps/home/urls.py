@@ -16,12 +16,17 @@ urlpatterns = [
 
     # Matches any html file
     # re_path(r'^.*\.*', views.pages, name='pages'),
+
+    # views urls
     path('upload_statement/', views.upload_statement, name='upload_statement'),
     path('process_statement/', views.process_statement, name='process_statement'),
     path('download_csv/', views.download_csv, name='download_csv'),
 
     path('categories/', views.categories, name='categories'),
 
+    path('upload_csv_statement/', views.upload_csv_statement, name='upload_csv_statement'),
+
+    # functions urls
     path('remove_from_csv/', remove_from_csv, name='remove_from_csv'),
     path('edit_csv_and_dictionary/', edit_csv_and_dictionary, name='edit_csv_and_dictionary'),
     path('edit_csv/', edit_csv, name='edit_csv'),
