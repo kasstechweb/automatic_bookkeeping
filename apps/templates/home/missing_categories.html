@@ -31,11 +31,10 @@
               <tr>
                 <th>#</th>
                 <th>Transaction</th>
+                <th>withdrawn</th>
+                <th>deposited</th>
+                <th>Balance</th>
                 <th>Category</th>
-                <th>Amount</th>
-                {% if bank == 'rbc' or bank == 'servus' or bank == 'scotia' %}
-                  <th>Balance</th>
-                {% endif %}
                 <th class="disabled-sorting text-right">Actions</th>
               </tr>
             </thead>
@@ -43,11 +42,10 @@
               <tr>
                 <th>#</th>
                 <th>Transaction</th>
+                <th>withdrawn</th>
+                <th>deposited</th>
+                <th>Balance</th>
                 <th>Category</th>
-                <th>Amount</th>
-                {% if bank == 'rbc' or bank == 'servus' or bank == 'scotia' %}
-                  <th>Balance</th>
-                {% endif %}
                 <th class="text-right">Actions</th>
               </tr>
             </tfoot>
@@ -56,15 +54,14 @@
                 {% if tr.5 == 'False' %}
                   <tr id="row_{{ forloop.counter }}">
                     <td>{{ forloop.counter }}</td>
+                    <td>{{ tr.1 }}</td>
+                    <td>{{ tr.2 }}</td>
                     <td>{{ tr.3 }}</td>
-                    <td></td>
                     <td>{{ tr.4 }}</td>
-                    {% if bank == 'rbc' or bank == 'servus' or bank == 'scotia' %}
-                      {% if tr.6 != 'None'%}
-                        <td>{{ tr.6 }}</td>
-                      {% else %}
-                        <td></td>
-                      {% endif %}
+                    {% if tr.5 != 'False'%}
+                      <td>{{ tr.5 }}</td>
+                    {% else %}
+                      <td></td>
                     {% endif %}
                     <td class="td-actions text-right">
                       <a href="#" class="btn btn-link btn-info btn-just-icon edit"  data-toggle="modal" data-target="#myModal"><i class="material-icons">edit</i></a>
@@ -118,7 +115,7 @@
           {% csrf_token %}
           <input type="hidden" name="row_id" id="row_id">
           <div class="form-group">
-            <input id="transaction" class="form-control" type="text" name="transaction" required="true" placeholder="Transaction"/>
+            <input disabled id="transaction" class="form-control" type="text" name="transaction" required="true" placeholder="Transaction"/>
           </div>
 
           <div class="form-group">
@@ -129,9 +126,9 @@
             </select>
           </div>
 
-          <div class="form-group">
+          <!-- <div class="form-group">
             <input id="amount" class="form-control" type="text" name="amount" required="true" placeholder="Amount"/>
-          </div>
+          </div> -->
 
       
 
@@ -180,7 +177,7 @@
       // console.log('option[value="'+data[2]+'"]')
       $('.selectpicker').selectpicker('refresh')
 
-      $('#amount').val(data[3]);
+      // $('#amount').val(data[3]);
       $('#row_id').val(data[0]);
       // $("html").removeClass('perfect-scrollbar-on')
       // $('.main-panel').addClass('ps-active-y')
@@ -215,11 +212,11 @@
     row_id = $('#row_id').val();
     transaction = $('#transaction').val();
     category = $('#category').val()
-    amount = $('#amount').val()
+    // amount = $('#amount').val()
     table = $('#datatables').DataTable();
 
-    console.log(table.data())
-    console.log(table.data().count())
+    // console.log(table.data())
+    // console.log(table.data().count())
     // console.log(category)
     $.ajax({
           type: 'POST',
@@ -248,7 +245,7 @@
             id: row_id,
             transaction: transaction,
             category: category,
-            amount: amount,
+            // amount: amount,
             file_name: "{{ file_name }}"
           },
           url: "{% url 'edit_csv_and_dictionary' %}"

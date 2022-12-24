@@ -211,13 +211,13 @@ def servus_pdftocsv(request, file_name):
     df = pd.DataFrame(line_items)
 
     filename = str(file_name).rsplit('.', 1)[0]
-    df.to_csv(settings.MEDIA_ROOT + "/"+ filename + '.csv')
+    df.to_csv(settings.MEDIA_ROOT + "/"+ filename + '.csv', index=False, header=False)
     return missing_category
 
 # function to convert atb bank pdf to csv file
 def scotia_pdftocsv(request, file_name):
     missing_category = False
-    Inv = namedtuple('Inv', 'date tr_date description amount category balance')
+    Inv = namedtuple('Inv', 'date description withdrawn deposited balance category')
     text = '' # new line
     with pdfplumber.open(settings.MEDIA_ROOT + "/" + str(file_name)) as pdf:
         for pdf_page in pdf.pages:
@@ -228,27 +228,42 @@ def scotia_pdftocsv(request, file_name):
                         '\n?(([\*|\-|\_|A-Z|a-z|0-9]\n)+)?(?!Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)([a-zA-Z0-9\-\_].+)?'
                             )
 
+    opening_line_re = re.compile(r'((Jan?|Feb?|Mar?|Apr?|May?|Jun?|Jul?|Aug?|Sep?|Oct?|Nov?|Dec?)\s\d{1,2})\s(\bOpening Balance\b)\s(.?\d{1,3}(?:,?\d{3})*\.\d{2}.*?)'
+                        )
+
+    opening_line = opening_line_re.findall(text)
+    opening_balance =  opening_line[0][3]
+
     line_items = []
 
+    previous_balance = opening_balance
     line = inv_line_re.findall(text)
     if line:
         for x in line:
-            date = ''
-            tr_date = x[0]
+            date = x[0]
             desc = x[2] + x[8]
             amount = x[4]
             balance = x[5]
+
+            if balance > previous_balance: #deposit
+                deposited = amount
+                withdrawn = ''
+            else:
+                deposited = ''
+                withdrawn = amount
+            previous_balance = balance
+            
             sub_categories = DictionarySubcategories.objects.all()
             category = get_category(desc, sub_categories)
             if category == False:
                 missing_category = True
 
-            line_items.append(Inv(date, tr_date, desc, amount, category, balance))
+            line_items.append(Inv(date, desc, withdrawn, deposited, balance, category))
 
     df = pd.DataFrame(line_items)
 
     filename = str(file_name).rsplit('.', 1)[0]
-    df.to_csv(settings.MEDIA_ROOT + "/"+ filename + '.csv')
+    df.to_csv(settings.MEDIA_ROOT + "/"+ filename + '.csv', index=False, header=False)
     return missing_category
 
 
@@ -296,19 +311,26 @@ def remove_from_csv(request):
     return JsonResponse(data)
 
 def edit_csv_and_dictionary(request):
-    print('edit csv called')
-    print(request.POST.get('id'))
+    # print('edit csv called')
+    # print(request.POST.get('id'))
     csv_file = pd.read_csv(Path(settings.MEDIA_ROOT + '/statements/' +request.POST.get('file_name')))
-    csv_file.at[int(request.POST.get('id'))-1,'description'] = request.POST.get('transaction')
-    csv_file.at[int(request.POST.get('id'))-1,'amount'] = request.POST.get('amount')
-    csv_file.at[int(request.POST.get('id'))-1,'category'] = request.POST.get('category')
+    # csv_file.at[int(request.POST.get('id'))-1,'description'] = request.POST.get('transaction')
+    # csv_file.at[int(request.POST.get('id'))-1,'amount'] = request.POST.get('amount')
+    csv_file.iat[int(request.POST.get('id'))-2, 5] = request.POST.get('category') # 5 is category column
+    print(int(request.POST.get('id'))-1)
     csv_file.to_csv(Path(settings.MEDIA_ROOT + '/statements/' +request.POST.get('file_name')), index=False)
     # add to dictionary db
     category = DictionaryCategories.objects.get(name=request.POST.get('category'))
-    print(category.pk)
-    print(request.POST.get('transaction'))
-    sub_category = DictionarySubcategories.objects.create(name=request.POST.get('transaction'), dictionary_category_id = category.pk)
-    sub_category.save()
+    # print(category.pk)
+    # print(request.POST.get('transaction'))
+
+    # check if db has same record
+    transaction = request.POST.get('transaction')
+    check_sub_category = DictionarySubcategories.objects.filter(name=transaction).exists()
+    if not check_sub_category: # not found duplicate
+        sub_category = DictionarySubcategories.objects.create(name= transaction, dictionary_category_id = category.pk)
+        sub_category.save()
+
     data = {'status': 200,
             'msg': 'edit success!'
             }

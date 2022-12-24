@@ -158,7 +158,7 @@ def download_csv(request):
             transactions = read_csv(filename)
             file_name = str(file_name).rsplit('/', 1)[1] + '.csv'
             file_name_download = '/media/statements/' + file_name
-            del transactions[0]
+            # del transactions[0]
             categories = DictionaryCategories.objects.all()
             return render(request, 'home/missing_categories.html', 
                 {
@@ -202,7 +202,7 @@ def categories(request):
         # print(file_name)
         # print(str(file_name).rsplit('/', 1)[1])
         transactions = read_csv(filename)
-        del transactions[0]
+        # del transactions[0]
         # sub_categories = DictionarySubcategories.objects.all()
         # categories = []
         # for r in transactions: # for each row in csv file

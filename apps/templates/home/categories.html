@@ -31,11 +31,10 @@ bank: {{ bank }}
               <tr>
                 <th>#</th>
                 <th>Transaction</th>
+                <th>withdrawn</th>
+                <th>deposited</th>
+                <th>Balance</th>
                 <th>Category</th>
-                <th>Amount</th>
-                {% if bank == 'rbc' or bank == 'servus' or bank == 'scotia' %}
-                  <th>Balance</th>
-                {% endif %}
                 <th class="disabled-sorting text-right">Actions</th>
               </tr>
             </thead>
@@ -43,11 +42,10 @@ bank: {{ bank }}
               <tr>
                 <th>#</th>
                 <th>Transaction</th>
+                <th>withdrawn</th>
+                <th>deposited</th>
+                <th>Balance</th>
                 <th>Category</th>
-                <th>Amount</th>
-                {% if bank == 'rbc' or bank == 'servus' or bank == 'scotia' %}
-                  <th>Balance</th>
-                {% endif %}
                 <th class="text-right">Actions</th>
               </tr>
             </tfoot>
@@ -55,16 +53,15 @@ bank: {{ bank }}
               {% for tr in transactions %}
                 <tr id="row_{{ forloop.counter }}">
                   <td>{{ forloop.counter }}</td>
-                  <td>{{ tr.3 }}</td>
-                  <td>{{ tr.5 }}</td>
-                  <td>{{ tr.4 }}</td>
-                  {% if bank == 'rbc' or bank == 'servus' or bank == 'scotia' %}
-                      {% if tr.6 != 'None'%}
-                        <td>{{ tr.6 }}</td>
-                      {% else %}
-                        <td></td>
-                      {% endif %}
-                  {% endif %}
+                    <td>{{ tr.1 }}</td>
+                    <td>{{ tr.2 }}</td>
+                    <td>{{ tr.3 }}</td>
+                    <td>{{ tr.4 }}</td>
+                    {% if tr.5 != 'False'%}
+                      <td>{{ tr.5 }}</td>
+                    {% else %}
+                      <td></td>
+                    {% endif %}
                   <td class="td-actions text-right">
                     <a href="#" class="btn btn-link btn-info btn-just-icon edit"  data-toggle="modal" data-target="#myModal"><i class="material-icons">edit</i></a>
                     <a href="#" class="btn btn-link btn-danger btn-just-icon remove"><i class="material-icons">close</i></a>
