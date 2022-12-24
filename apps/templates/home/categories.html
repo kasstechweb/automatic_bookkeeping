@@ -33,7 +33,7 @@ bank: {{ bank }}
                 <th>Transaction</th>
                 <th>Category</th>
                 <th>Amount</th>
-                {% if bank == 'rbc'%}
+                {% if bank == 'rbc' or bank == 'servus' or bank == 'scotia' %}
                   <th>Balance</th>
                 {% endif %}
                 <th class="disabled-sorting text-right">Actions</th>
@@ -45,7 +45,7 @@ bank: {{ bank }}
                 <th>Transaction</th>
                 <th>Category</th>
                 <th>Amount</th>
-                {% if bank == 'rbc'%}
+                {% if bank == 'rbc' or bank == 'servus' or bank == 'scotia' %}
                   <th>Balance</th>
                 {% endif %}
                 <th class="text-right">Actions</th>
@@ -58,7 +58,7 @@ bank: {{ bank }}
                   <td>{{ tr.3 }}</td>
                   <td>{{ tr.5 }}</td>
                   <td>{{ tr.4 }}</td>
-                  {% if bank == 'rbc' %}
+                  {% if bank == 'rbc' or bank == 'servus' or bank == 'scotia' %}
                       {% if tr.6 != 'None'%}
                         <td>{{ tr.6 }}</td>
                       {% else %}

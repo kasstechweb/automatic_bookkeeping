@@ -13,7 +13,7 @@ from .models import DictionaryCategories, DictionarySubcategories, Document
 # from django.shortcuts import render  
 from .forms import DocumentForm
 from django.shortcuts import render
-from .functions import td_pdftocsv, rbc_pdftocsv, atb_pdftocsv, servus_pdftocsv, read_csv
+from .functions import td_pdftocsv, rbc_pdftocsv, atb_pdftocsv, servus_pdftocsv, scotia_pdftocsv, read_csv
 
 
 @login_required(login_url="/login/")
@@ -144,6 +144,8 @@ def download_csv(request):
             check_missing_category = atb_pdftocsv(request, file_name)
         elif bank == 'servus':
             check_missing_category = servus_pdftocsv(request, file_name)
+        elif bank == 'scotia':
+            check_missing_category = scotia_pdftocsv(request, file_name)
         
         if check_missing_category == True: # there is a missing category ask user to add it before downloading csv
             print('there is missing category')

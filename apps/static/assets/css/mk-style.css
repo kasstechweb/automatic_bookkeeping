@@ -68,6 +68,7 @@ form .form-group .error {
 .rbc{background-image:url("/static/assets/img/rbc.png");}
 .atb{background-image:url("/static/assets/img/atb.png");}
 .servus{background-image:url("/static/assets/img/servus.png");}
+.scotia{background-image:url("/static/assets/img/scotia.png");}
 
 .cc-selector-2 input:active +.drinkcard-cc, .cc-selector input:active +.drinkcard-cc{opacity: .9;}
 .cc-selector-2 input:checked +.drinkcard-cc, .cc-selector input:checked +.drinkcard-cc{
