@@ -251,9 +251,18 @@
           url: "{% url 'edit_csv_and_dictionary' %}"
       }).done(function(data) {
           $('#myModal').modal('toggle');
-          var rowid = '#row_'+row_id;
-          $("#datatables tbody").find(rowid).remove();
+          // var rowid = '#row_'+row_id;
+          // $("#datatables tbody").find(rowid).remove();
           mk.showNotification('top','right', 'success', data.msg);
+
+          for (let index = 0; index < data.duplicates_ids.length; index++) {
+            // console.log(data.duplicates_ids[index]+1)
+            var row = '#row_' + (parseInt(data.duplicates_ids[index]) + 1);
+            console.log(row);
+            $('#datatables').dataTable().fnDeleteRow(row);
+            $("#datatables tbody").find(row).remove();
+          } 
+          console.log(data.duplicates_ids)
 
       }).fail(function(data) {
           console.log('errors happened: ' + data);

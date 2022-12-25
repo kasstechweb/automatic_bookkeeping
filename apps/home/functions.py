@@ -242,6 +242,7 @@ def scotia_pdftocsv(request, file_name):
         for x in line:
             date = x[0]
             desc = x[2] + x[8]
+            desc = desc.strip()
             amount = x[4]
             balance = x[5]
 
@@ -305,7 +306,7 @@ def remove_from_csv(request):
     # print(request.POST.get('file_name')) 
     csv_file = pd.read_csv(Path(settings.MEDIA_ROOT + '/statements/' +request.POST.get('file_name')))
     csv_file.drop(int(request.POST.get('id'))-1,axis=0,inplace=True)
-    csv_file.to_csv(Path(settings.MEDIA_ROOT + '/statements/' +request.POST.get('file_name')), index=False)
+    csv_file.to_csv(Path(settings.MEDIA_ROOT + '/statements/' +request.POST.get('file_name')), index=False, header=False)
     data = {'status': 200,
             'deleted': 'test'}
     return JsonResponse(data)
@@ -313,26 +314,43 @@ def remove_from_csv(request):
 def edit_csv_and_dictionary(request):
     # print('edit csv called')
     # print(request.POST.get('id'))
+
+    # get dduplicates list
+    file = open(Path(settings.MEDIA_ROOT + '/statements/' +request.POST.get('file_name')))
+    csvreader = csv.reader(file)
+    transaction = request.POST.get('transaction')
+    print(transaction)
+    duplicates_ids = []
+    for index, row in enumerate(csvreader):
+        #rows.append(row)
+        if transaction == row[1]:
+            duplicates_ids.append(index)
+            print(index)
+    file.close()
+    
+    # read csv with pandas and update caategories imcluding duuplicates
     csv_file = pd.read_csv(Path(settings.MEDIA_ROOT + '/statements/' +request.POST.get('file_name')))
-    # csv_file.at[int(request.POST.get('id'))-1,'description'] = request.POST.get('transaction')
-    # csv_file.at[int(request.POST.get('id'))-1,'amount'] = request.POST.get('amount')
-    csv_file.iat[int(request.POST.get('id'))-2, 5] = request.POST.get('category') # 5 is category column
+
+    for dup in duplicates_ids:
+        csv_file.iat[int(dup)-1, 5] = request.POST.get('category') # 5 is category column
+    # csv_file.iat[int(request.POST.get('id'))-2, 5] = request.POST.get('category') # 5 is category column
     print(int(request.POST.get('id'))-1)
-    csv_file.to_csv(Path(settings.MEDIA_ROOT + '/statements/' +request.POST.get('file_name')), index=False)
+    csv_file.to_csv(Path(settings.MEDIA_ROOT + '/statements/' +request.POST.get('file_name')), index=False, header=False)
     # add to dictionary db
     category = DictionaryCategories.objects.get(name=request.POST.get('category'))
     # print(category.pk)
     # print(request.POST.get('transaction'))
 
     # check if db has same record
-    transaction = request.POST.get('transaction')
+    # transaction = request.POST.get('transaction')
     check_sub_category = DictionarySubcategories.objects.filter(name=transaction).exists()
     if not check_sub_category: # not found duplicate
         sub_category = DictionarySubcategories.objects.create(name= transaction, dictionary_category_id = category.pk)
         sub_category.save()
 
     data = {'status': 200,
-            'msg': 'edit success!'
+            'msg': 'edit success!',
+            'duplicates_ids': duplicates_ids
             }
     return JsonResponse(data)
 
