@@ -106,7 +106,15 @@ bank: {{ bank }}
             </div>
 
             <div class="form-group">
-              <input id="amount" class="form-control" type="text" name="amount" required="true" placeholder="Amount"/>
+              <input id="withdrawn" class="form-control" type="text" name="withdrawn" placeholder="withdrawn"/>
+            </div>
+
+            <div class="form-group">
+              <input id="deposited" class="form-control" type="text" name="deposited" placeholder="deposited"/>
+            </div>
+
+            <div class="form-group">
+              <input id="balance" class="form-control" type="text" name="balance" required="true" placeholder="balance"/>
             </div>
 
           <div class="modal-footer">
@@ -149,11 +157,13 @@ bank: {{ bank }}
       console.log('You press on Row:-' + data[0] + '-' + data[1] + '-' + data[2] );
       $('#transaction').val(data[1]);
 
-      $('select[name="category"]').find('option[value="'+data[2]+'"]').attr("selected","selected")
+      $('select[name="category"]').find('option[value="'+data[5]+'"]').attr("selected","selected")
       // console.log('option[value="'+data[2]+'"]')
       $('.selectpicker').selectpicker('refresh')
 
-      $('#amount').val(data[3]);
+      $('#withdrawn').val(data[2]);
+      $('#deposited').val(data[3]);
+      $('#balance').val(data[4]);
       $('#row_id').val(data[0]);
       // $("html").removeClass('perfect-scrollbar-on')
       // $('.main-panel').addClass('ps-active-y')
@@ -222,11 +232,14 @@ bank: {{ bank }}
     row_id = $('#row_id').val();
     transaction = $('#transaction').val();
     category = $('#category').val()
-    amount = $('#amount').val()
+    withdrawn = $('#withdrawn').val()
+    deposited = $('#deposited').val()
+    balance = $('#balance').val()
     table = $('#datatables').DataTable();
 
-    console.log(table.data())
-    console.log(table.data().count())
+
+    // console.log(table.data())
+    // console.log(table.data().count())
     // console.log(category)
     $.ajax({
           type: 'POST',
@@ -255,7 +268,9 @@ bank: {{ bank }}
             id: row_id,
             transaction: transaction,
             category: category,
-            amount: amount,
+            withdrawn : withdrawn,
+            deposited : deposited,
+            balance : balance,
             file_name: "{{ file_name }}"
           },
           url: "{% url 'edit_csv' %}"
@@ -263,6 +278,17 @@ bank: {{ bank }}
           $('#myModal').modal('toggle');
           var rowid = '#row_'+row_id;
           mk.showNotification('top','right', 'success', data.msg);
+
+          // update row when finish editing
+          var temp = table.row(row_id-1).data();
+          // console.log(temp);
+          temp[1] = transaction;
+          temp[2] = withdrawn;
+          temp[3] = deposited;
+          temp[4] = balance;
+          temp[5] = category;
+          $('#datatables').dataTable().fnUpdate(temp, $('tr'+ rowid), undefined, false);
+
       }).fail(function(data) {
           console.log('errors happened: ' + data);
       });

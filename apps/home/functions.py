@@ -305,7 +305,7 @@ def remove_from_csv(request):
     # print(request.POST.get('id')) 
     # print(request.POST.get('file_name')) 
     csv_file = pd.read_csv(Path(settings.MEDIA_ROOT + '/statements/' +request.POST.get('file_name')))
-    csv_file.drop(int(request.POST.get('id'))-1,axis=0,inplace=True)
+    csv_file.drop(int(request.POST.get('id')),axis=0,inplace=True)
     csv_file.to_csv(Path(settings.MEDIA_ROOT + '/statements/' +request.POST.get('file_name')), index=False, header=False)
     data = {'status': 200,
             'deleted': 'test'}
@@ -358,9 +358,13 @@ def edit_csv(request):
     print('edit csv called')
     print(request.POST.get('id'))
     csv_file = pd.read_csv(Path(settings.MEDIA_ROOT + '/statements/' +request.POST.get('file_name')))
-    csv_file.at[int(request.POST.get('id'))-1,'description'] = request.POST.get('transaction')
-    csv_file.at[int(request.POST.get('id'))-1,'amount'] = request.POST.get('amount')
-    csv_file.at[int(request.POST.get('id'))-1,'category'] = request.POST.get('category')
+
+    csv_file.iat[int(request.POST.get('id'))-2, 1] = request.POST.get('transaction')
+    csv_file.iat[int(request.POST.get('id'))-2, 2] = request.POST.get('withdrawn')
+    csv_file.iat[int(request.POST.get('id'))-2, 3] = request.POST.get('deposited')
+    csv_file.iat[int(request.POST.get('id'))-2, 4] = request.POST.get('balance')
+    csv_file.iat[int(request.POST.get('id'))-2, 5] = request.POST.get('category')
+
     csv_file.to_csv(Path(settings.MEDIA_ROOT + '/statements/' +request.POST.get('file_name')), index=False)
     data = {'status': 200,
             'msg': 'edit success!'
