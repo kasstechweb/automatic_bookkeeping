@@ -47,42 +47,79 @@ def handle_uploaded_file(f):
 def td_pdftocsv(request, file_name):
     current_user = request.user
     missing_category = False
-    Inv = namedtuple('Inv', 'tr_date date description amount category')
+    # Inv = namedtuple('Inv', 'tr_date date description amount category')
     text = '' # new line
     with pdfplumber.open(settings.MEDIA_ROOT + "/" + str(file_name)) as pdf:
         for pdf_page in pdf.pages:
-            single_page_text = pdf_page.extract_text(x_tolerance=1, layout=False)
+            single_page_text = pdf_page.extract_text(x_tolerance=1, y_tolerance=0, layout=False)
             text = text + '\n' + single_page_text
 
-    inv_line_re = re.compile(r'((JAN?|FEB?|MAR?|APR?|MAY|JUN?|JUL?|AUG?|SEP?|OCT?|NOV?|DEC?)+ \d{1,2}) '
-                         '((JAN?|FEB?|MAR?|APR?|MAY|JUN?|JUL?|AUG?|SEP?|OCT?|NOV?|DEC?)+ \d{1,2}) '
-                         '([^\$]+)+ ([-]?[$]?\d{1,3}(?:,?\d{3})*\.\d{2})'
+    inv_line_re = re.compile(r'((JAN?|FEB?|MAR?|APR?|MAY?|JUN?|JUL?|AUG?|SEP?|OCT?|NOV?|DEC?)\s\d{1,2})'
+                             '\s((JAN?|FEB?|MAR?|APR?|MAY?|JUN?|JUL?|AUG?|SEP?|OCT?|NOV?|DEC?)\s\d{1,2})'
+                             '\s([-]?[$]?\d{1,3}(?:,?\d{3})*\.\d{2})'
+                             '\n?(([\*|\-|\_|A-Z|a-z|0-9]))?'
+                             '\n(([a-zA-Z0-9].+)\s)'
+                            '\n?(([\*|\-|\_|A-Z|a-z|0-9]\n)+)?'
+                             '\n?(?!JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)([a-zA-Z0-9\-\_].+)?'
                         )
 
-    # for line in text.split('\n'):
-    #     line = inv_line_re.search(line)
-    #     if line:
-    #         # print(line)
-    #         print(line.group(1) + ' * ' +line.group(3)+ ' * ' +line.group(5)+ ' * ' +line.group(6) )
-    
+
+    # get previous balance
+    opening_line_re = re.compile(r'(\bPREVIOUS STATEMENT BALANCE\b)\s(.?\d{1,3}(?:,?\d{3})*\.\d{2}.*?)')
+    opening_line = opening_line_re.findall(text)
+    opening_balance =  opening_line[0][1]
+    opening_balance = opening_balance.replace('$', '')
+    opening_balance = opening_balance.replace(',', '')
+    previous_balance = float(opening_balance)
+    print(previous_balance)
+    ignore_list = ['Available Credit', 'Cash Advances', 'CALCULATING YOUR BALANCE', 'Previous Balance', 'Payments & Credits', 'Interest', 'Sub-total']
+
     line_items = []
-    for line in text.split('\n'):
-        line = inv_line_re.search(line)
-        if line:
-            inv_dt = line.group(1)
-            due_dt = line.group(3)
-            desc = unidecode(line.group(5))
-            inv_amt = line.group(6)
+    line = inv_line_re.findall(text)
+    if line:
+        for x in line:
+
+            date = x[0]
+            # get description but not in ignore
+            for item in ignore_list:
+                if x[11].find(item) != -1:
+                    desc = unidecode(x[8])
+                    break
+                else:
+                    desc = unidecode(x[8]) + ' ' + unidecode(x[11])
+
+            amount = x[4].replace('$', '')
+            amount = amount.replace(',', '')
+            amount = float(amount)
+            print(amount)
+            
+            if amount > 0: #deposit
+                deposited = ''
+                withdrawn = amount
+                balance = float(previous_balance) - withdrawn
+                balance = round(balance, 2)
+                balance = '%#.2f' % balance
+                # balance = format(balance, '.2f')
+            else:
+                deposited = (amount * -1)
+                withdrawn = ''
+                balance = float(previous_balance) +  deposited
+                balance = round(balance, 2)
+                balance = '%#.2f' % balance
+                # balance = format(balance, '.2f')
+            previous_balance = balance
+
             sub_categories = DictionarySubcategories.objects.all()
             category = get_category(desc, sub_categories)
             if category == False:
                 missing_category = True
-            line_items.append(Inv(inv_dt, due_dt, desc, inv_amt, category))
+
+            line_items.append((date, desc, withdrawn, deposited, balance, category))
 
     df = pd.DataFrame(line_items)
 
     filename = str(file_name).rsplit('.', 1)[0]
-    df.to_csv(settings.MEDIA_ROOT + "/"+ filename + '.csv')
+    df.to_csv(settings.MEDIA_ROOT + "/"+ filename + '.csv', index=False, header=False)
     return missing_category
 
 # function to convert rbc bank pdf to csv file
@@ -304,9 +341,9 @@ def remove_from_csv(request):
     # print('remove from csv called')
     # print(request.POST.get('id')) 
     # print(request.POST.get('file_name')) 
-    csv_file = pd.read_csv(Path(settings.MEDIA_ROOT + '/statements/' +request.POST.get('file_name')))
+    csv_file = pd.read_csv(Path(settings.MEDIA_ROOT + '/statements/' +request.POST.get('file_name')), header=None)
     csv_file.drop(int(request.POST.get('id')),axis=0,inplace=True)
-    csv_file.to_csv(Path(settings.MEDIA_ROOT + '/statements/' +request.POST.get('file_name')), index=False, header=False)
+    csv_file.to_csv(Path(settings.MEDIA_ROOT + '/statements/' +request.POST.get('file_name')), index=False, header=None)
     data = {'status': 200,
             'deleted': 'test'}
     return JsonResponse(data)
@@ -329,13 +366,13 @@ def edit_csv_and_dictionary(request):
     file.close()
     
     # read csv with pandas and update caategories imcluding duuplicates
-    csv_file = pd.read_csv(Path(settings.MEDIA_ROOT + '/statements/' +request.POST.get('file_name')))
+    csv_file = pd.read_csv(Path(settings.MEDIA_ROOT + '/statements/' +request.POST.get('file_name')), header=None)
 
     for dup in duplicates_ids:
         csv_file.iat[int(dup)-1, 5] = request.POST.get('category') # 5 is category column
     # csv_file.iat[int(request.POST.get('id'))-2, 5] = request.POST.get('category') # 5 is category column
     print(int(request.POST.get('id'))-1)
-    csv_file.to_csv(Path(settings.MEDIA_ROOT + '/statements/' +request.POST.get('file_name')), index=False, header=False)
+    csv_file.to_csv(Path(settings.MEDIA_ROOT + '/statements/' +request.POST.get('file_name')), index=False, header=None)
     # add to dictionary db
     category = DictionaryCategories.objects.get(name=request.POST.get('category'))
     # print(category.pk)
@@ -357,7 +394,7 @@ def edit_csv_and_dictionary(request):
 def edit_csv(request):
     print('edit csv called')
     print(request.POST.get('id'))
-    csv_file = pd.read_csv(Path(settings.MEDIA_ROOT + '/statements/' +request.POST.get('file_name')))
+    csv_file = pd.read_csv(Path(settings.MEDIA_ROOT + '/statements/' +request.POST.get('file_name')), header=None)
 
     csv_file.iat[int(request.POST.get('id'))-2, 1] = request.POST.get('transaction')
     csv_file.iat[int(request.POST.get('id'))-2, 2] = request.POST.get('withdrawn')
@@ -365,7 +402,7 @@ def edit_csv(request):
     csv_file.iat[int(request.POST.get('id'))-2, 4] = request.POST.get('balance')
     csv_file.iat[int(request.POST.get('id'))-2, 5] = request.POST.get('category')
 
-    csv_file.to_csv(Path(settings.MEDIA_ROOT + '/statements/' +request.POST.get('file_name')), index=False)
+    csv_file.to_csv(Path(settings.MEDIA_ROOT + '/statements/' +request.POST.get('file_name')), index=False, header=None)
     data = {'status': 200,
             'msg': 'edit success!'
             }
