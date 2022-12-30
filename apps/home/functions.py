@@ -313,7 +313,7 @@ def rbc_pdftocsv(request, file_name):
 # function to convert atb bank pdf to csv file
 def atb_pdftocsv(request, file_name):
     missing_category = False
-    Inv = namedtuple('Inv', 'date_charged date_posted description amount category')
+    # Inv = namedtuple('Inv', 'date_charged date_posted description amount category')
     text = '' # new line
     with pdfplumber.open(settings.MEDIA_ROOT + "/" + str(file_name)) as pdf:
         for pdf_page in pdf.pages:
@@ -327,26 +327,28 @@ def atb_pdftocsv(request, file_name):
 
     line_items = []
     for line in text.split('\n'):
-        restart = False
+        # restart = False
         line = inv_line_re.search(line)
         if line:
             
-            date_charged = line.group(1)
-            date_posted = line.group(3)
+            date = line.group(1)
+            # date_posted = line.group(3)
             desc = line.group(5)
-            amount = line.group(6)
+            withdrawn = line.group(6)
+            deposited = '' 
+            balance = ''
 
             sub_categories = DictionarySubcategories.objects.all()
             category = get_category(desc, sub_categories)
             if category == False:
                 missing_category = True
 
-            line_items.append(Inv(date_charged, date_posted, desc, amount, category))
+            line_items.append((date, desc, withdrawn, deposited, balance, category))
 
     df = pd.DataFrame(line_items)
 
     filename = str(file_name).rsplit('.', 1)[0]
-    df.to_csv(settings.MEDIA_ROOT + "/"+ filename + '.csv')
+    df.to_csv(settings.MEDIA_ROOT + "/"+ filename + '.csv', index=False, header=None)
     return missing_category
 
 # function to convert atb bank pdf to csv file
