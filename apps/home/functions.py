@@ -75,6 +75,7 @@ def td_pdftocsv(request, file_name):
     ignore_list = ['Available Credit', 'Cash Advances', 'CALCULATING YOUR BALANCE', 'Previous Balance', 'Payments & Credits', 'Interest', 'Sub-total']
 
     line_items = []
+    sub_categories = DictionarySubcategories.objects.all()
     line = inv_line_re.findall(text)
     if line:
         for x in line:
@@ -109,7 +110,7 @@ def td_pdftocsv(request, file_name):
                 # balance = format(balance, '.2f')
             previous_balance = balance
 
-            sub_categories = DictionarySubcategories.objects.all()
+            
             category = get_category(desc, sub_categories)
             if category == False:
                 missing_category = True
@@ -155,7 +156,7 @@ def rbc_pdftocsv(request, file_name):
 
         for x in line:
             if x[0] != '':
-                print(x[0]+ ' ========= ' + x[2] + ' ========= ' + x[3] + ' ========= ' + x[4])
+                # print(x[0]+ ' ========= ' + x[2] + ' ========= ' + x[3] + ' ========= ' + x[4])
                 date = x[0]
                 desc = x[2] 
                 amount = x[3]
@@ -175,7 +176,7 @@ def rbc_pdftocsv(request, file_name):
                 line_items.append((date, desc, withdrawn, deposited, balance, category))
 
             elif x[5] != '' and x[0] == '' and x[1] == ''and x[2] == '' and x[3] == '' and x[4] == ''  :
-                print(x[5]+ ' ========= ' + x[7] + ' ========= ' + x[8] + ' ========= ' + x[9])
+                # print(x[5]+ ' ========= ' + x[7] + ' ========= ' + x[8] + ' ========= ' + x[9])
                 date = x[5]
                 desc = x[7] 
                 amount = x[8]
@@ -195,7 +196,7 @@ def rbc_pdftocsv(request, file_name):
                 line_items.append((date, desc, withdrawn, deposited, balance, category))
 
             elif x[2] != ''  and x[0] == '' and x[1] == '':
-                print(' ========= ' + x[2] + ' ========= ' + x[3] + ' ========= ' + x[4])
+                # print(' ========= ' + x[2] + ' ========= ' + x[3] + ' ========= ' + x[4])
                 date = ''
                 desc = x[2] 
                 amount = x[3]
@@ -215,7 +216,7 @@ def rbc_pdftocsv(request, file_name):
                 line_items.append((date, desc, withdrawn, deposited, balance, category))
 
             elif x[11] != ''  and x[0] == '' and x[1] == '' and x[2] == '' and x[3] == '' and x[4] == ''and x[5] == ''and x[6] == ''and x[7] == '' and x[8] == ''and x[9] == ''and x[10] == '':
-                print(' ========= ' + x[11] + ' ' + x[14] + ' ========= ' + x[15] + ' ========= ' + x[16])
+                # print(' ========= ' + x[11] + ' ' + x[14] + ' ========= ' + x[15] + ' ========= ' + x[16])
                 date = ''
                 desc = x[11] + ' ' + x[14] 
                 amount = x[15]
@@ -235,7 +236,7 @@ def rbc_pdftocsv(request, file_name):
                 line_items.append((date, desc, withdrawn, deposited, balance, category))
 
             elif x[9] != ''  and x[0] == '' and x[1] == '' and x[2] == '' and x[3] == '' and x[4] == ''and x[5] == ''and x[6] == ''and x[7] == '' and x[8] == '':
-                print(x[9] + ' ========= ' + x[11] + ' ' + x[14] + ' ========= ' + x[15] + ' ========= ' + x[16])
+                # print(x[9] + ' ========= ' + x[11] + ' ' + x[14] + ' ========= ' + x[15] + ' ========= ' + x[16])
                 date = x[9]
                 desc = x[11] + ' ' + x[14] 
                 amount = x[15]
@@ -255,7 +256,7 @@ def rbc_pdftocsv(request, file_name):
                 line_items.append((date, desc, withdrawn, deposited, balance, category))
 
             elif x[7] != '' and x[0] == '' and x[1] == ''and x[2] == '' and x[3] == '' and x[4] == ''and x[5] == ''and x[6] == '' and x[7] not in ignore_list:
-                print(' ========= ' + x[7] + ' ========= ' + x[8] + ' ========= ' + x[9])
+                # print(' ========= ' + x[7] + ' ========= ' + x[8] + ' ========= ' + x[9])
                 date = ''
                 desc = x[7]
                 amount = x[8]
@@ -326,6 +327,7 @@ def atb_pdftocsv(request, file_name):
                             )
 
     line_items = []
+    sub_categories = DictionarySubcategories.objects.all()
     for line in text.split('\n'):
         # restart = False
         line = inv_line_re.search(line)
@@ -338,7 +340,7 @@ def atb_pdftocsv(request, file_name):
             deposited = '' 
             balance = ''
 
-            sub_categories = DictionarySubcategories.objects.all()
+            
             category = get_category(desc, sub_categories)
             if category == False:
                 missing_category = True
@@ -354,7 +356,7 @@ def atb_pdftocsv(request, file_name):
 # function to convert atb bank pdf to csv file
 def servus_pdftocsv(request, file_name):
     missing_category = False
-    Inv = namedtuple('Inv', 'date tr_date description amount category balance')
+    # Inv = namedtuple('Inv', 'date tr_date description amount category balance')
     text = '' # new line
     with pdfplumber.open(settings.MEDIA_ROOT + "/" + str(file_name)) as pdf:
         for pdf_page in pdf.pages:
@@ -366,28 +368,40 @@ def servus_pdftocsv(request, file_name):
                             )
 
     line_items = []
+    sub_categories = DictionarySubcategories.objects.all()
     for line in text.split('\n'):
-        restart = False
+        # restart = False
         line = inv_line_re.search(line)
         if line:
             
-            date = ''
-            tr_date = line.group(1)
+            date = line.group(1)
             desc = line.group(4)
-            amount = line.group(5)
+            
+            if '(' and ')' in str(line.group(5)):
+                # print('withdrawl')
+                withdrawn = line.group(5)
+                deposited = ''
+                withdrawn = clean_amount(withdrawn)
+            else:
+                # print('deposit')
+                withdrawn = ''
+                deposited = line.group(5)
+                deposited = clean_amount(deposited)
+                
+            # amount = line.group(5)
             balance = line.group(6)
+            balance = clean_amount(balance)
 
-            sub_categories = DictionarySubcategories.objects.all()
             category = get_category(desc, sub_categories)
             if category == False:
                 missing_category = True
 
-            line_items.append(Inv(date, tr_date, desc, amount, category, balance))
+            line_items.append((date, desc, withdrawn, deposited, balance, category))
 
     df = pd.DataFrame(line_items)
 
     filename = str(file_name).rsplit('.', 1)[0]
-    df.to_csv(settings.MEDIA_ROOT + "/"+ filename + '.csv', index=False, header=False)
+    df.to_csv(settings.MEDIA_ROOT + "/"+ filename + '.csv', index=False, header=None)
     return missing_category
 
 # function to convert atb bank pdf to csv file
@@ -411,6 +425,7 @@ def scotia_pdftocsv(request, file_name):
     opening_balance =  opening_line[0][3]
 
     line_items = []
+    sub_categories = DictionarySubcategories.objects.all()
 
     previous_balance = opening_balance
     line = inv_line_re.findall(text)
@@ -430,7 +445,6 @@ def scotia_pdftocsv(request, file_name):
                 withdrawn = amount
             previous_balance = balance
             
-            sub_categories = DictionarySubcategories.objects.all()
             category = get_category(desc, sub_categories)
             if category == False:
                 missing_category = True
@@ -440,7 +454,7 @@ def scotia_pdftocsv(request, file_name):
     df = pd.DataFrame(line_items)
 
     filename = str(file_name).rsplit('.', 1)[0]
-    df.to_csv(settings.MEDIA_ROOT + "/"+ filename + '.csv', index=False, header=False)
+    df.to_csv(settings.MEDIA_ROOT + "/"+ filename + '.csv', index=False, header=None)
     return missing_category
 
 
@@ -552,3 +566,12 @@ def remove_digits(str):
     clean_str = re.sub('[^a-zA-Z\s]+', '', str)
     clean_str = clean_str.rstrip()
     return clean_str
+
+def clean_amount(str):
+    new_str = str
+    new_str = new_str.replace(',', '')
+    new_str = new_str.replace('$', '')
+    new_str = new_str.replace('(', '')
+    new_str = new_str.replace(')', '')
+    
+    return new_str
