@@ -457,6 +457,23 @@ def scotia_pdftocsv(request, file_name):
     df.to_csv(settings.MEDIA_ROOT + "/"+ filename + '.csv', index=False, header=None)
     return missing_category
 
+# function to read csv file and add categories and check if missing category
+def td_process_csv(file_name):
+    missing_category = False
+    sub_categories = DictionarySubcategories.objects.all()
+    transactions = read_csv(settings.MEDIA_ROOT + "/" + str(file_name))
+
+    csv_file = pd.read_csv(Path(settings.MEDIA_ROOT + '/' + str(file_name)), header=None)
+    csv_file[''] = ''
+    for index, row in enumerate(transactions):
+        # print(row[1])
+        category = get_category(row[1], sub_categories)
+        if category == False:
+            missing_category = True
+        csv_file.iat[index, 5] = category
+    
+    csv_file.to_csv(Path(settings.MEDIA_ROOT + '/' + str(file_name)), index=False, header=None)
+    return missing_category
 
 #function to read csv file
 def read_csv(file_path_name):
@@ -563,7 +580,8 @@ def edit_csv(request):
 
 
 def remove_digits(str):
-    clean_str = re.sub('[^a-zA-Z\s]+', '', str)
+    # str = str.split('*')[0]
+    clean_str = re.sub('\w*\d|\*\w*', '', str)
     clean_str = clean_str.rstrip()
     return clean_str
 

@@ -115,7 +115,7 @@
           {% csrf_token %}
           <input type="hidden" name="row_id" id="row_id">
           <div class="form-group">
-            <input disabled id="transaction" class="form-control" type="text" name="transaction" required="true" placeholder="Transaction"/>
+            <input id="transaction" class="form-control" type="text" name="transaction" required="true" placeholder="Transaction"/>
           </div>
 
           <div class="form-group">
@@ -130,19 +130,19 @@
             <input id="amount" class="form-control" type="text" name="amount" required="true" placeholder="Amount"/>
           </div> -->
 
-      
-
-
       <div class="modal-footer">
-        <button type="button" class="btn btn-primary btn-link" onclick="edit_csv_ajax()">Save</button>
+        <button type="button" class="btn btn-primary btn-link" onclick="edit_csv_ajax()">
+          
+          Save
+        </button>
         <button type="button" class="btn btn-danger btn-link" data-dismiss="modal">Close</button>
       </div>
-
+      <div id="loader" class="ml-auto mr-auto loader d-none"></div>
       </form>
       </div>
     </div>
   </div>
-</div>
+</div><!-- end modal -->
 
 {% endblock content %}
 
@@ -209,6 +209,7 @@
 
 <script>
   function edit_csv_ajax(){
+    $('#loader').removeClass('d-none');
     row_id = $('#row_id').val();
     transaction = $('#transaction').val();
     category = $('#category').val()
@@ -258,12 +259,12 @@
           for (let index = 0; index < data.duplicates_ids.length; index++) {
             // console.log(data.duplicates_ids[index]+1)
             var row = '#row_' + (parseInt(data.duplicates_ids[index]) + 1);
-            console.log(row);
+            // console.log(row);
             $('#datatables').dataTable().fnDeleteRow(row);
             $("#datatables tbody").find(row).remove();
           } 
-          console.log(data.duplicates_ids)
-
+          // console.log(data.duplicates_ids)
+          $('#loader').addClass('d-none');
       }).fail(function(data) {
           console.log('errors happened: ' + data);
       });
