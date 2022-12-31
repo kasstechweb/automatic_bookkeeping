@@ -475,6 +475,33 @@ def td_process_csv(file_name):
     csv_file.to_csv(Path(settings.MEDIA_ROOT + '/' + str(file_name)), index=False, header=None)
     return missing_category
 
+# atb function to read csv file and add categories and check if missing category
+def atb_process_csv(file_name):
+    missing_category = False
+    sub_categories = DictionarySubcategories.objects.all()
+    transactions = read_csv(settings.MEDIA_ROOT + "/" + str(file_name))
+    del transactions[0]
+
+    csv_file = pd.read_csv(Path(settings.MEDIA_ROOT + '/' + str(file_name)))
+    line_items = []
+    for row in transactions:
+        # print(row[1])
+        date = row[0]
+        desc = row[8]
+        withdrawn = row[5]
+        deposited = row[6]
+        balance = row[7]
+        category = get_category(desc, sub_categories)
+        if category == False:
+            missing_category = True
+        # csv_file.iat[index, 5] = category
+        line_items.append((date, desc, withdrawn, deposited, balance, category))
+    
+    df = pd.DataFrame(line_items)
+    filename = str(file_name).rsplit('.', 1)[0]
+    df.to_csv(settings.MEDIA_ROOT + "/"+ filename + '.csv', index=False, header=None)
+    return missing_category
+
 #function to read csv file
 def read_csv(file_path_name):
     file = open(file_path_name)

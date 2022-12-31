@@ -13,7 +13,8 @@ from .models import DictionaryCategories, DictionarySubcategories, Document
 # from django.shortcuts import render  
 from .forms import DocumentForm, DocumentCSVForm
 from django.shortcuts import render
-from .functions import td_pdftocsv, rbc_pdftocsv, atb_pdftocsv, servus_pdftocsv, scotia_pdftocsv, read_csv, td_process_csv
+from apps.home import functions
+# td_pdftocsv, rbc_pdftocsv, atb_pdftocsv, servus_pdftocsv, scotia_pdftocsv, read_csv, td_process_csv
 
 
 @login_required(login_url="/login/")
@@ -137,17 +138,19 @@ def download_csv(request):
         bank = request.POST.get('bank')
         print('bank is : ' + bank)
         if bank == 'td':
-            check_missing_category = td_pdftocsv(request, file_name)
+            check_missing_category = functions.td_pdftocsv(request, file_name)
         elif bank == 'rbc':
-            check_missing_category = rbc_pdftocsv(request, file_name)
+            check_missing_category = functions.rbc_pdftocsv(request, file_name)
         elif bank == 'atb':
-            check_missing_category = atb_pdftocsv(request, file_name)
+            check_missing_category = functions.atb_pdftocsv(request, file_name)
         elif bank == 'servus':
-            check_missing_category = servus_pdftocsv(request, file_name)
+            check_missing_category = functions.servus_pdftocsv(request, file_name)
         elif bank == 'scotia':
-            check_missing_category = scotia_pdftocsv(request, file_name)
+            check_missing_category = functions.scotia_pdftocsv(request, file_name)
         elif bank == 'td_csv':
-            check_missing_category = td_process_csv(file_name)
+            check_missing_category = functions.td_process_csv(file_name)
+        elif bank == 'atb_csv':
+            check_missing_category = functions.atb_process_csv(file_name)
         
         if check_missing_category == True: # there is a missing category ask user to add it before downloading csv
             print('there is missing category')
@@ -157,7 +160,7 @@ def download_csv(request):
             filename = Path(settings.MEDIA_ROOT + file_name + '.csv')
             # print(file_name)
             # print(str(file_name).rsplit('/', 1)[1])
-            transactions = read_csv(filename)
+            transactions = functions.read_csv(filename)
             file_name = str(file_name).rsplit('/', 1)[1] + '.csv'
             file_name_download = '/media/statements/' + file_name
             # del transactions[0]
@@ -203,7 +206,7 @@ def categories(request):
         filename = Path(settings.MEDIA_ROOT + file_name + '.csv')
         # print(file_name)
         # print(str(file_name).rsplit('/', 1)[1])
-        transactions = read_csv(filename)
+        transactions = functions.read_csv(filename)
         # del transactions[0]
         # sub_categories = DictionarySubcategories.objects.all()
         # categories = []
