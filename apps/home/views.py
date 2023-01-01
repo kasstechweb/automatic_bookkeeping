@@ -153,6 +153,8 @@ def download_csv(request):
             check_missing_category = functions.atb_process_csv(file_name)
         elif bank == 'rbc_csv':
             check_missing_category = functions.rbc_process_csv(file_name)
+        elif bank == 'cibc_csv':
+            check_missing_category = functions.cibc_process_csv(file_name)
         
         if check_missing_category == True: # there is a missing category ask user to add it before downloading csv
             print('there is missing category')
