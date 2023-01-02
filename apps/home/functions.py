@@ -20,7 +20,7 @@ from .models import DictionaryCategories, DictionarySubcategories
 # from apps.home.models import DictionaryCategories
 
 def handle_uploaded_file(f):
-    print('handling ' + settings.MEDIA_ROOT + f.name)
+    # print('handling ' + settings.MEDIA_ROOT + f.name)
     destination = open(settings.MEDIA_ROOT + f.name, 'wb+')
     for chunk in f.chunks():
         destination.write(chunk)
@@ -71,7 +71,7 @@ def td_pdftocsv(request, file_name):
     opening_balance = opening_balance.replace('$', '')
     opening_balance = opening_balance.replace(',', '')
     previous_balance = float(opening_balance)
-    print(previous_balance)
+    # print(previous_balance)
     ignore_list = ['Available Credit', 'Cash Advances', 'CALCULATING YOUR BALANCE', 'Previous Balance', 'Payments & Credits', 'Interest', 'Sub-total']
 
     line_items = []
@@ -92,7 +92,7 @@ def td_pdftocsv(request, file_name):
             amount = x[4].replace('$', '')
             amount = amount.replace(',', '')
             amount = float(amount)
-            print(amount)
+            # print(amount)
             
             if amount > 0: #deposit
                 deposited = ''
@@ -594,6 +594,8 @@ def read_csv(file_path_name):
 def get_category(search_str, sub_categories):
     # sub_categories = DictionarySubcategories.objects.all()
     search_str = search_str.lower()
+    search_str = remove_digits(search_str)
+    # print(search_str)
     for x in sub_categories:
         if x.name.lower() in search_str:
             category = DictionaryCategories.objects.get(pk=x.dictionary_category_id)
@@ -619,37 +621,27 @@ def remove_from_csv(request):
     return JsonResponse(data)
 
 def edit_csv_and_dictionary(request):
-    # print('edit csv called')
-    # print(request.POST.get('id'))
 
     # get dduplicates list
     file = open(Path(settings.MEDIA_ROOT + '/statements/' +request.POST.get('file_name')))
     csvreader = csv.reader(file)
+    original_transaction = request.POST.get('original_transaction')
     transaction = request.POST.get('transaction')
-    print(transaction)
     duplicates_ids = []
+
     for index, row in enumerate(csvreader):
-        #rows.append(row)
-        if remove_digits(transaction) == remove_digits(row[1]):
+        if remove_digits(transaction) in remove_digits(row[1]):
             duplicates_ids.append(index)
-            print(index)
     file.close()
     
     # read csv with pandas and update caategories imcluding duuplicates
     csv_file = pd.read_csv(Path(settings.MEDIA_ROOT + '/statements/' +request.POST.get('file_name')), header=None)
-
     for dup in duplicates_ids:
         csv_file.iat[int(dup), 5] = request.POST.get('category') # 5 is category column
-    # csv_file.iat[int(request.POST.get('id'))-2, 5] = request.POST.get('category') # 5 is category column
-    # print(int(request.POST.get('id'))-1)
     csv_file.to_csv(Path(settings.MEDIA_ROOT + '/statements/' +request.POST.get('file_name')), index=False, header=None)
+
     # add to dictionary db
     category = DictionaryCategories.objects.get(name=request.POST.get('category'))
-    # print(category.pk)
-    # print(request.POST.get('transaction'))
-
-    # check if db has same record
-    # transaction = request.POST.get('transaction')
     check_sub_category = DictionarySubcategories.objects.filter(name= remove_digits(transaction)).exists()
     if not check_sub_category: # not found duplicate
         sub_category = DictionarySubcategories.objects.create(name= remove_digits(transaction), dictionary_category_id = category.pk)
@@ -662,8 +654,8 @@ def edit_csv_and_dictionary(request):
     return JsonResponse(data)
 
 def edit_csv(request):
-    print('edit csv called')
-    print(request.POST.get('id'))
+    # print('edit csv called')
+    # print(request.POST.get('id'))
     csv_file = pd.read_csv(Path(settings.MEDIA_ROOT + '/statements/' +request.POST.get('file_name')), header=None)
 
     csv_file.iat[int(request.POST.get('id'))-2, 1] = request.POST.get('transaction')
@@ -681,8 +673,9 @@ def edit_csv(request):
 
 def remove_digits(str):
     # str = str.split('*')[0]
-    clean_str = re.sub('\w*\d|\*\w*', '', str)
+    clean_str = re.sub('\w*\d|\*.*\w.*', '', str)
     clean_str = clean_str.rstrip()
+    clean_str = clean_str.rstrip("FROM: /-")
     return clean_str
 
 def clean_amount(str):

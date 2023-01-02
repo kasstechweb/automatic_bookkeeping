@@ -114,6 +114,8 @@
         <form id="modal_form" class="form-horizontal" action="" method="">
           {% csrf_token %}
           <input type="hidden" name="row_id" id="row_id">
+          <input type="hidden" name="original_transaction" id="original_transaction">
+
           <div class="form-group">
             <input id="transaction" class="form-control" type="text" name="transaction" required="true" placeholder="Transaction"/>
           </div>
@@ -172,6 +174,7 @@
       var data = table.row($tr).data();
       console.log('You press on Row:-' + data[0] + '-' + data[1] + '-' + data[2] );
       $('#transaction').val(data[1]);
+      $('#original_transaction').val(data[1]);
 
       $('select[name="category"]').find('option[value="'+data[2]+'"]').attr("selected","selected")
       // console.log('option[value="'+data[2]+'"]')
@@ -212,6 +215,7 @@
     $('#loader').removeClass('d-none');
     row_id = $('#row_id').val();
     transaction = $('#transaction').val();
+    original_transaction = $('#original_transaction').val();
     category = $('#category').val()
     // amount = $('#amount').val()
     table = $('#datatables').DataTable();
@@ -245,6 +249,7 @@
           data: {
             id: row_id,
             transaction: transaction,
+            original_transaction: original_transaction,
             category: category,
             // amount: amount,
             file_name: "{{ file_name }}"

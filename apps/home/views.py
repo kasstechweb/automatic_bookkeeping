@@ -103,8 +103,8 @@ def upload_statement(request):
 def process_statement(request):
     context = {}
     current_user = request.user
-    if request.method == "POST":
-        print('process statement post called')
+    # if request.method == "POST":
+        # print('process statement post called')
         # print(file_name)
         # return HttpResponse(file_name)
     try:
@@ -136,7 +136,7 @@ def download_csv(request):
 
         # check banks
         bank = request.POST.get('bank')
-        print('bank is : ' + bank)
+        # print('bank is : ' + bank)
         if bank == 'td':
             check_missing_category = functions.td_pdftocsv(request, file_name)
         elif bank == 'rbc':
@@ -157,7 +157,7 @@ def download_csv(request):
             check_missing_category = functions.cibc_process_csv(file_name)
         
         if check_missing_category == True: # there is a missing category ask user to add it before downloading csv
-            print('there is missing category')
+            # print('there is missing category')
             file_id = request.POST.get('file_id')
             file = Document.objects.get(pk=file_id)
             file_name = str(file.docfile).rsplit('.', 1)[0]
@@ -179,15 +179,33 @@ def download_csv(request):
                 'bank': bank
                 })
         else: # there is no missing category
-            filename = str(file_name).rsplit('.', 1)[0]
-            filename = '/media/' + filename + '.csv'
-            
-            return render(request, 'home/download_csv.html', 
-                    {
-                    'file_name': filename,
-                    'file_id': file_id,
-                    'bank': bank
-                    })
+            if bank == 'td_csv' or bank == 'atb_csv' or bank == 'rbc_csv' or bank == 'cibc_csv':
+                file_id = request.POST.get('file_id')
+                file = Document.objects.get(pk=file_id)
+                file_name = str(file.docfile).rsplit('.', 1)[0]
+                filename = Path(settings.MEDIA_ROOT + file_name + '.csv')
+                transactions = functions.read_csv(filename)
+                file_name = str(file_name).rsplit('/', 1)[1] + '.csv'
+                categories = DictionaryCategories.objects.all()
+                bank = request.POST.get('bank')
+                # print('bank from categories : ' + str(bank))
+                return render(request, 'home/categories.html', 
+                        {
+                        'categories': categories,
+                        'transactions': transactions,
+                        'file_name': file_name,
+                        'bank': bank
+                        })
+            else:
+                filename = str(file_name).rsplit('.', 1)[0]
+                filename = '/media/' + filename + '.csv'
+                
+                return render(request, 'home/download_csv.html', 
+                        {
+                        'file_name': filename,
+                        'file_id': file_id,
+                        'bank': bank
+                        })
     try:
         return render(request, 'home/download_csv.html')
 
