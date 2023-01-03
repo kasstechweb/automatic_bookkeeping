@@ -285,24 +285,38 @@ def upload_csv_statement(request):
         form = DocumentForm(request.POST, request.FILES)
         
         if form.is_valid():
-            # print(request.POST.get('bank'))
+            files = request.FILES.getlist('docfile')
+
+            files_ids = []
             bank = request.POST.get('bank')
-            # print(request.FILES)
-            if request.FILES['docfile'].name.split('.')[-1] != 'csv':
-                # print('error pfd')
-                msg = 'Unsupported file extension, please upload a .csv statement'
-            else:
-                newdoc = Document(docfile = request.FILES['docfile'])
-                newdoc.submitter = request.user
-                # print(newdoc)
-                newdoc.save()
-                # print(newdoc.docfile)
-                return render(request, 'home/process_statement.html', 
-                    {
-                    'user_id': current_user.id,
-                    'file_id': newdoc.pk, 
-                    'bank': bank
-                    })
+
+            for file in files:
+                print(file)
+                # newdoc = Document(docfile = file)
+                # newdoc.submitter = request.user
+                # newdoc.save()
+
+                
+                # bank = request.POST.get('bank')
+
+                print(file.name.split('.')[-1])
+                if file.name.split('.')[-1] == 'csv' or file.name.split('.')[-1] == 'pdf':
+                    newdoc = Document(docfile = file)
+                    newdoc.submitter = request.user
+                    newdoc.save()
+                    files_ids.append(newdoc.pk)
+                else:
+                    msg = 'Unsupported file extension, please upload a .csv or .pdf statement'
+                    return render(request, 'home/upload_csv_statement.html',
+                                            {'segment': 'upload_csv_statement' ,'form': form, 'msg':msg})
+                    
+
+            return render(request, 'home/process_statement.html', 
+                {
+                'user_id': current_user.id,
+                'files_ids': files_ids, 
+                'bank': bank
+                })
     try:
         form = DocumentCSVForm(request.POST, request.FILES)
         return render(request, 'home/upload_csv_statement.html',{'segment': 'upload_csv_statement' ,'form': form, 'msg':msg})
@@ -316,44 +330,57 @@ def upload_csv_statement(request):
         html_template = loader.get_template('home/page-500.html')
         return HttpResponse(html_template.render(context, request))
 
-# Upload csv statement page and go to process statement page 
-@login_required(login_url="/login/")
-def upload_statement_multiple(request):
-    context = {}
-    msg = ''
-    current_user = request.user
-    if request.method == "POST":
-        print(request.FILES)
-        # form = DocumentForm(request.POST, request.FILES)
+# # Upload csv statement page and go to process statement page 
+# @login_required(login_url="/login/")
+# def upload_statement_multiple(request):
+#     context = {}
+#     msg = ''
+#     current_user = request.user
+#     if request.method == "POST":
+#         form = DocumentMultipleForm(request.POST, request.FILES)
         
-        # if form.is_valid():
-        #     # print(request.POST.get('bank'))
-        #     bank = request.POST.get('bank')
-        #     # print(request.FILES)
-        #     if request.FILES['docfile'].name.split('.')[-1] != 'csv':
-        #         # print('error pfd')
-        #         msg = 'Unsupported file extension, please upload a .csv statement'
-        #     else:
-        #         newdoc = Document(docfile = request.FILES['docfile'])
-        #         newdoc.submitter = request.user
-        #         # print(newdoc)
-        #         newdoc.save()
-        #         # print(newdoc.docfile)
-        #         return render(request, 'home/process_statement.html', 
-        #             {
-        #             'user_id': current_user.id,
-        #             'file_id': newdoc.pk, 
-        #             'bank': bank
-        #             })
-    try:
-        form = DocumentMultipleForm(request.POST, request.FILES)
-        return render(request, 'home/upload_statement_multiple.html',{'segment': 'upload_multiple_statement' ,'form': form, 'msg':msg})
+#         if form.is_valid():
+#             files = request.FILES.getlist('docfile')
 
-    except template.TemplateDoesNotExist:
+#             file_ids = []
+#             for file in files:
+#                 print(file)
+#                 if file.name.split('.')[-1] != 'csv':
+#                     msg = 'Unsupported file extension, please upload a .csv statement'
+#                 # newdoc = Document(docfile = file)
+#                 # newdoc.submitter = request.user
+#                 # newdoc.save()
 
-        html_template = loader.get_template('home/page-404.html')
-        return HttpResponse(html_template.render(context, request))
+#                 # file_ids.append(newdoc.pk)
+#                 bank = request.POST.get('bank')
 
-    except:
-        html_template = loader.get_template('home/page-500.html')
-        return HttpResponse(html_template.render(context, request))
+#             for x in file_ids:
+#                 print(x)
+#         # print(request.FILES)
+#         # if request.FILES['docfile'].name.split('.')[-1] != 'csv':
+#         #     # print('error pfd')
+#         #     msg = 'Unsupported file extension, please upload a .csv statement'
+#         # else:
+#         # newdoc = Document(docfile = request.FILES['docfile'])
+#         # newdoc.submitter = request.user
+#         # # print(newdoc)
+#         # newdoc.save()
+#         # print(newdoc.docfile)
+#         # return render(request, 'home/process_multiple_statement.html', 
+#         #     {
+#         #     'user_id': current_user.id,
+#         #     'file_ids': file_ids, 
+#         #     'bank': bank
+#         #     })
+#     try:
+#         form = DocumentMultipleForm(request.POST, request.FILES)
+#         return render(request, 'home/upload_statement_multiple.html',{'segment': 'upload_multiple_statement' ,'form': form, 'msg':msg})
+
+#     except template.TemplateDoesNotExist:
+
+#         html_template = loader.get_template('home/page-404.html')
+#         return HttpResponse(html_template.render(context, request))
+
+#     except:
+#         html_template = loader.get_template('home/page-500.html')
+#         return HttpResponse(html_template.render(context, request))

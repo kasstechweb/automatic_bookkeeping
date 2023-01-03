@@ -20,15 +20,13 @@
   <div class="col-md-10">
     <div class="card">
       <div class="card-header card-header-primary">
-        <h4 class="card-title">Process Statement</h4>
+        <h4 class="card-title">Download Statement</h4>
         <!-- <p class="card-category">Processing your state</p> -->
       </div>
       <div class="card-body">
-        <form action="{% url 'download_csv' %}" method="POST" class="post-form">
-          {% csrf_token %}
-          <input type="hidden" name="file_id" value="{{ file_id }}">
-          <input type="hidden" name="files_ids" value="{{ files_ids }}">
-          <input type="hidden" name="bank" value="{{ bank }}">
+        <!-- <form action="{% url 'process_statement' %}" method="POST" class="post-form"> -->
+          
+        <!-- <input type="hidden" name="file_id" value="{{ file_id }}"> -->
         <div class="swal2-header">
           <div class="swal2-icon swal2-success swal2-animate-success-icon" style="display: flex;">
           <div class="swal2-success-circular-line-left" style="background-color: rgb(255, 255, 255);">
@@ -39,12 +37,17 @@
           <div class="swal2-success-fix" style="background-color: rgb(255, 255, 255);"></div>
           <div class="swal2-success-circular-line-right" style="background-color: rgb(255, 255, 255);"></div>
         </div>
-        {% for file in files_ids %}
+        {% for file in file_ids %}
           <h2 class="swal2-title" id="swal2-title">Upload Complete! {{ file }}</h2>
         {% endfor %}
         </div>
 
-        <button type="submit" class="btn btn-primary pull-right">Convert to excel sheet</button>
+        <form action="{% url 'categories' %}" method="POST" class="post-form">
+          {% csrf_token %}
+          <input type="hidden" name="file_id" value="{{ file_id }}">
+          <input type="hidden" name="bank" value="{{ bank }}">
+          
+          <button type="submit" class="btn btn-primary pull-right">Show Categories</button>
           <div class="clearfix"></div>
         </form>
         
@@ -53,7 +56,7 @@
               // mk.showSwal('basic')
             });
         </script>
-      </div>
+      </div><!-- end card body -->
     </div>
   </div>
 </div>
