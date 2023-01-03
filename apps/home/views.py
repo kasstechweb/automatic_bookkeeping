@@ -11,7 +11,7 @@ from django.conf import settings
 from .models import DictionaryCategories, DictionarySubcategories, Document
 
 # from django.shortcuts import render  
-from .forms import DocumentForm, DocumentCSVForm
+from .forms import DocumentForm, DocumentCSVForm, DocumentMultipleForm
 from django.shortcuts import render
 from apps.home import functions
 # td_pdftocsv, rbc_pdftocsv, atb_pdftocsv, servus_pdftocsv, scotia_pdftocsv, read_csv, td_process_csv
@@ -316,3 +316,44 @@ def upload_csv_statement(request):
         html_template = loader.get_template('home/page-500.html')
         return HttpResponse(html_template.render(context, request))
 
+# Upload csv statement page and go to process statement page 
+@login_required(login_url="/login/")
+def upload_statement_multiple(request):
+    context = {}
+    msg = ''
+    current_user = request.user
+    if request.method == "POST":
+        print(request.FILES)
+        # form = DocumentForm(request.POST, request.FILES)
+        
+        # if form.is_valid():
+        #     # print(request.POST.get('bank'))
+        #     bank = request.POST.get('bank')
+        #     # print(request.FILES)
+        #     if request.FILES['docfile'].name.split('.')[-1] != 'csv':
+        #         # print('error pfd')
+        #         msg = 'Unsupported file extension, please upload a .csv statement'
+        #     else:
+        #         newdoc = Document(docfile = request.FILES['docfile'])
+        #         newdoc.submitter = request.user
+        #         # print(newdoc)
+        #         newdoc.save()
+        #         # print(newdoc.docfile)
+        #         return render(request, 'home/process_statement.html', 
+        #             {
+        #             'user_id': current_user.id,
+        #             'file_id': newdoc.pk, 
+        #             'bank': bank
+        #             })
+    try:
+        form = DocumentMultipleForm(request.POST, request.FILES)
+        return render(request, 'home/upload_statement_multiple.html',{'segment': 'upload_multiple_statement' ,'form': form, 'msg':msg})
+
+    except template.TemplateDoesNotExist:
+
+        html_template = loader.get_template('home/page-404.html')
+        return HttpResponse(html_template.render(context, request))
+
+    except:
+        html_template = loader.get_template('home/page-500.html')
+        return HttpResponse(html_template.render(context, request))

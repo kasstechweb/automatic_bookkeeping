@@ -17,6 +17,7 @@ form .form-group .error {
 }    
 
 .mk-input-group-text {
+    cursor: pointer;
     display: flex;
     -ms-flex-align: center!important;
     align-items: center!important;
@@ -48,7 +49,12 @@ form .form-group .error {
     border-radius: 0.25rem;
     transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
     margin: 1rem 0;
-    
+    cursor: pointer;
+}
+
+input[type=file], /* FF, IE7+, chrome (except button) */
+input[type=file]::-webkit-file-upload-button { /* chromes and blink button */
+    cursor: pointer; 
 }
 
 
