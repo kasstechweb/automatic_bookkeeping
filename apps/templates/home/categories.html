@@ -90,7 +90,7 @@ bank: {{ bank }}
       </div>
       <div class="modal-body">
 
-          <form id="modal_form" class="form-horizontal" action="" method="">
+          <!-- <form id="modal_form" class="form-horizontal" action="" method="">
             {% csrf_token %}
             <input type="hidden" name="row_id" id="row_id">
             <div class="form-group">
@@ -121,7 +121,50 @@ bank: {{ bank }}
             <button type="button" class="btn btn-primary btn-link" onclick="edit_csv_ajax()">Save</button>
             <button type="button" class="btn btn-danger btn-link" data-dismiss="modal">Close</button>
           </div>
-        </form>
+        </form> -->
+
+        <form id="modal_form" class="form-horizontal" action="" method="">
+          {% csrf_token %}
+          <input type="hidden" name="row_id" id="row_id">
+          <input type="hidden" name="original_transaction" id="original_transaction">
+
+          <div class="form-group">
+            <input id="transaction" class="form-control" type="text" name="transaction" required="true" placeholder="Transaction"/>
+          </div>
+
+          <div class="form-group">
+            <select class="selectpicker" id="category" name="category" data-width="100%" data-live-search="true" data-style="btn btn-primary " title="Select Categories">
+              {% for cat in categories %}
+                <option value="{{ cat.name }}">{{ cat.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-group">
+            <input id="withdrawn" class="form-control" type="text" name="withdrawn" placeholder="withdrawn"/>
+          </div>
+
+          <div class="form-group">
+            <input id="deposited" class="form-control" type="text" name="deposited" placeholder="deposited"/>
+          </div>
+
+          <div class="form-group">
+            <input id="balance" class="form-control" type="text" name="balance" required="true" placeholder="balance"/>
+          </div>
+
+          <!-- <div class="form-group">
+            <input id="amount" class="form-control" type="text" name="amount" required="true" placeholder="Amount"/>
+          </div> -->
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary btn-link" onclick="edit_csv_ajax()">
+              
+              Save
+            </button>
+            <button type="button" class="btn btn-danger btn-link" data-dismiss="modal">Close</button>
+          </div>
+          <div id="loader" class="ml-auto mr-auto loader d-none"></div>
+      </form>
 
       </div>
     </div>
@@ -156,6 +199,7 @@ bank: {{ bank }}
       var data = table.row($tr).data();
       console.log('You press on Row:-' + data[0] + '-' + data[1] + '-' + data[2] );
       $('#transaction').val(data[1]);
+      $('#original_transaction').val(data[1]);
 
       $('select[name="category"]').find('option[value="'+data[5]+'"]').attr("selected","selected")
       // console.log('option[value="'+data[2]+'"]')
@@ -181,6 +225,7 @@ bank: {{ bank }}
       e.preventDefault();
       console.log(data[0])
       console.log('You deleted Row: ' + data[0] + ' ' + data[1] + ' ' + data[2] + '\'s row.');
+      // transaction = data[1];
       // console.log(JSON.stringify(data))
       // var csrftoken = getCookie('csrftoken'); // from https://docs.djangoproject.com/en/1.7/ref/contrib/csrf/#ajax 
       $.ajax({
@@ -208,11 +253,13 @@ bank: {{ bank }}
           },
           data: {
             id: data[0],
+            // transaction: transaction,
             file_name: "{{ file_name }}"
           },
           url: "{% url 'remove_from_csv' %}"
       }).done(function(data) {
           console.log(data.deleted + ' images were deleted');
+          location.reload();
       }).fail(function(data) {
           console.log('errors happened: ' + data);
       });
@@ -231,6 +278,7 @@ bank: {{ bank }}
     function edit_csv_ajax(){
     row_id = $('#row_id').val();
     transaction = $('#transaction').val();
+    original_transaction = $('#original_transaction').val();
     category = $('#category').val()
     withdrawn = $('#withdrawn').val()
     deposited = $('#deposited').val()
@@ -267,6 +315,7 @@ bank: {{ bank }}
           data: {
             id: row_id,
             transaction: transaction,
+            original_transaction: original_transaction,
             category: category,
             withdrawn : withdrawn,
             deposited : deposited,

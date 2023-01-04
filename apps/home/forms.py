@@ -13,7 +13,7 @@ class DocumentCSVForm(forms.Form):
     docfile = forms.FileField(
         # label='Select a file',
         # help_text='max. 42 megabytes',
-        widget=forms.FileInput(attrs={'accept':'.csv', 'multiple': 'multiple'})
+        widget=forms.FileInput(attrs={'accept':'application/pdf, .csv', 'multiple': 'multiple'})
     )
 
 class DocumentMultipleForm(forms.Form):
