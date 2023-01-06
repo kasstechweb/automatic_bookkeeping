@@ -202,7 +202,7 @@ def download_csv(request):
                 newdoc = Document(docfile = new_file_path_name)
                 newdoc.submitter = request.user
                 newdoc.save()
-                file_id = newdoc.pk
+                new_file_id = newdoc.pk
 
                 file_name_download = '/media/' + new_file_path_name
                 file_name = str(new_file_path_name).rsplit('\\', 1)[1]
@@ -220,7 +220,7 @@ def download_csv(request):
                     'transactions': transactions,
                     'file_name': file_name,
                     'categories': categories,
-                    'file_id': file_id,
+                    'file_id': new_file_id,
                     'file_name_download': file_name_download,
                     'bank': bank
                     })
@@ -297,6 +297,42 @@ def categories(request):
     # using try to get the view template
     try:
         return render(request, 'home/categories.html')
+
+    except template.TemplateDoesNotExist:
+        html_template = loader.get_template('home/page-404.html')
+        return HttpResponse(html_template.render(context, request))
+
+    except:
+        html_template = loader.get_template('home/page-500.html')
+        return HttpResponse(html_template.render(context, request))
+
+
+# statements_history
+@login_required(login_url="/login/")
+def statements_history(request):
+    context = {}
+    # if request.method == "POST":
+        # file_id = request.POST.get('file_id')
+        
+        # file = Document.objects.get(pk=file_id)
+        # filename = Path(settings.MEDIA_ROOT + str(file.docfile))
+        # transactions = functions.read_csv(filename)
+        # categories = DictionaryCategories.objects.all()
+        # bank = request.POST.get('bank')
+
+        # file_name = str(filename).rsplit('\\', 1)[1]
+        # return render(request, 'home/categories.html', 
+        #         {
+        #         'categories': categories,
+        #         'transactions': transactions,
+        #         # 'zipped_data': zipped_data,
+        #         'file_name': file_name,
+        #         'bank': bank
+        #         })
+    # using try to get the view template
+    try:
+        
+        return render(request, 'home/statements_history.html',{'segment': 'statements_history'})
 
     except template.TemplateDoesNotExist:
         html_template = loader.get_template('home/page-404.html')

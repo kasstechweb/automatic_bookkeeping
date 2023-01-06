@@ -1,0 +1,347 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Upload statement {% endblock %} 
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}
+  <link rel="stylesheet" href="/static/assets/Fileinput.less">
+{% endblock stylesheets %}
+
+{% block content %}
+{% if msg %}
+  <script>
+    $(document).ready(function() {
+      mk.showNotification('top','right', 'danger', '{{ msg | safe }}');
+    });
+  </script>
+{% endif %}  
+
+<div class="row justify-content-md-center">
+
+  <div class="col-md-10">
+    <div class="card">
+      <div class="card-header card-header-primary">
+        <h4 class="card-title">Statements History</h4>
+        <!-- <p class="card-category">Processing your state</p> -->
+      </div>
+      <div class="card-body">
+        <div class="material-datatables">
+          <table id="datatables" class="table table-striped table-no-bordered table-hover" cellspacing="0" width="100%" style="width:100%">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Transaction</th>
+                <th>withdrawn</th>
+                <th>deposited</th>
+                <th>Balance</th>
+                <th>Category</th>
+                <th class="disabled-sorting text-right">Actions</th>
+              </tr>
+            </thead>
+            <tfoot>
+              <tr>
+                <th>#</th>
+                <th>Transaction</th>
+                <th>withdrawn</th>
+                <th>deposited</th>
+                <th>Balance</th>
+                <th>Category</th>
+                <th class="text-right">Actions</th>
+              </tr>
+            </tfoot>
+            <tbody>
+              {% for tr in transactions %}
+                <tr id="row_{{ forloop.counter }}">
+                  <td>{{ forloop.counter }}</td>
+                    <td>{{ tr.1 }}</td>
+                    <td>{{ tr.2 }}</td>
+                    <td>{{ tr.3 }}</td>
+                    <td>{{ tr.4 }}</td>
+                    {% if tr.5 != 'False'%}
+                      <td>{{ tr.5 }}</td>
+                    {% else %}
+                      <td></td>
+                    {% endif %}
+                  <td class="td-actions text-right">
+                    <a href="#" class="btn btn-link btn-info btn-just-icon edit"  data-toggle="modal" data-target="#myModal"><i class="material-icons">edit</i></a>
+                    <a href="#" class="btn btn-link btn-danger btn-just-icon remove"><i class="material-icons">close</i></a>
+                  </td>
+                </tr>
+              {% endfor %}
+
+              
+            </tbody>
+          </table>
+        </div>
+
+      </div> <!-- end card body -->
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Edit Transaction</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+          <i class="material-icons">clear</i>
+        </button>
+      </div>
+      <div class="modal-body">
+
+          <!-- <form id="modal_form" class="form-horizontal" action="" method="">
+            {% csrf_token %}
+            <input type="hidden" name="row_id" id="row_id">
+            <div class="form-group">
+              <input id="transaction" class="form-control" type="text" name="transaction" required="true" placeholder="Transaction"/>
+            </div>
+
+            <div class="form-group">
+              <select class="selectpicker" id="category" name="category" data-width="100%" data-live-search="true" data-style="btn btn-primary " title="Select Categories">
+                {% for cat in categories %}
+                  <option value="{{ cat.name }}">{{ cat.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="form-group">
+              <input id="withdrawn" class="form-control" type="text" name="withdrawn" placeholder="withdrawn"/>
+            </div>
+
+            <div class="form-group">
+              <input id="deposited" class="form-control" type="text" name="deposited" placeholder="deposited"/>
+            </div>
+
+            <div class="form-group">
+              <input id="balance" class="form-control" type="text" name="balance" required="true" placeholder="balance"/>
+            </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary btn-link" onclick="edit_csv_ajax()">Save</button>
+            <button type="button" class="btn btn-danger btn-link" data-dismiss="modal">Close</button>
+          </div>
+        </form> -->
+
+        <form id="modal_form" class="form-horizontal" action="" method="">
+          {% csrf_token %}
+          <input type="hidden" name="row_id" id="row_id">
+          <input type="hidden" name="original_transaction" id="original_transaction">
+
+          <div class="form-group">
+            <input id="transaction" class="form-control" type="text" name="transaction" required="true" placeholder="Transaction"/>
+          </div>
+
+          <div class="form-group">
+            <select class="selectpicker" id="category" name="category" data-width="100%" data-live-search="true" data-style="btn btn-primary " title="Select Categories">
+              {% for cat in categories %}
+                <option value="{{ cat.name }}">{{ cat.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-group">
+            <input id="withdrawn" class="form-control" type="text" name="withdrawn" placeholder="withdrawn"/>
+          </div>
+
+          <div class="form-group">
+            <input id="deposited" class="form-control" type="text" name="deposited" placeholder="deposited"/>
+          </div>
+
+          <div class="form-group">
+            <input id="balance" class="form-control" type="text" name="balance" required="true" placeholder="balance"/>
+          </div>
+
+          <!-- <div class="form-group">
+            <input id="amount" class="form-control" type="text" name="amount" required="true" placeholder="Amount"/>
+          </div> -->
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary btn-link" onclick="edit_csv_ajax()">
+              
+              Save
+            </button>
+            <button type="button" class="btn btn-danger btn-link" data-dismiss="modal">Close</button>
+          </div>
+          <div id="loader" class="ml-auto mr-auto loader d-none"></div>
+      </form>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+
+<script>
+  $(document).ready(function() {
+    var table = $('#datatables').DataTable({
+      "pagingType": "full_numbers",
+      "lengthMenu": [
+        [10, 25, 50, -1],
+        [10, 25, 50, "All"]
+      ],
+      responsive: true,
+      language: {
+        search: "_INPUT_",
+        searchPlaceholder: "Search records",
+      }
+    });
+
+    // var table = $('#datatable').DataTable();
+
+    // Edit record
+    table.on('click', '.edit', function() {
+      $tr = $(this).closest('tr');
+      var data = table.row($tr).data();
+      console.log('You press on Row:-' + data[0] + '-' + data[1] + '-' + data[2] );
+      $('#transaction').val(data[1]);
+      $('#original_transaction').val(data[1]);
+
+      $('select[name="category"]').find('option[value="'+data[5]+'"]').attr("selected","selected")
+      // console.log('option[value="'+data[2]+'"]')
+      $('.selectpicker').selectpicker('refresh')
+
+      $('#withdrawn').val(data[2]);
+      $('#deposited').val(data[3]);
+      $('#balance').val(data[4]);
+      $('#row_id').val(data[0]);
+      // $("html").removeClass('perfect-scrollbar-on')
+      // $('.main-panel').addClass('ps-active-y')
+    });
+
+    // $('#myModal').on('hidden.bs.modal', function () {
+    //   $("html").addClass('perfect-scrollbar-on')
+    // });
+
+    // Delete a record
+    table.on('click', '.remove', function(e) {
+      $tr = $(this).closest('tr');
+      var data = table.row($tr).data();
+      table.row($tr).remove().draw();
+      e.preventDefault();
+      console.log(data[0])
+      console.log('You deleted Row: ' + data[0] + ' ' + data[1] + ' ' + data[2] + '\'s row.');
+      // transaction = data[1];
+      // console.log(JSON.stringify(data))
+      // var csrftoken = getCookie('csrftoken'); // from https://docs.djangoproject.com/en/1.7/ref/contrib/csrf/#ajax 
+      $.ajax({
+          type: 'POST',
+          beforeSend: function(xhr, settings) {
+              function getCookie(name) {
+                  var cookieValue = null;
+                  if (document.cookie && document.cookie != '') {
+                      var cookies = document.cookie.split(';');
+                      for (var i = 0; i < cookies.length; i++) {
+                          var cookie = jQuery.trim(cookies[i]);
+                          // Does this cookie string begin with the name we want?
+                          if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                              cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                              break;
+                          }
+                      }
+                  }
+                  return cookieValue;
+              }
+              if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+                  // Only send the token to relative URLs i.e. locally.
+                  xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+              }
+          },
+          data: {
+            id: data[0],
+            // transaction: transaction,
+            file_name: "{{ file_name }}"
+          },
+          url: "{% url 'remove_from_csv' %}"
+      }).done(function(data) {
+          console.log(data.deleted + ' images were deleted');
+          location.reload();
+      }).fail(function(data) {
+          console.log('errors happened: ' + data);
+      });
+    });
+
+    //Like record
+    // table.on('click', '.like', function() {
+    //   console.log('You clicked on Like button');
+    // });
+
+    
+  });
+</script>
+
+<script>
+    function edit_csv_ajax(){
+    row_id = $('#row_id').val();
+    transaction = $('#transaction').val();
+    original_transaction = $('#original_transaction').val();
+    category = $('#category').val()
+    withdrawn = $('#withdrawn').val()
+    deposited = $('#deposited').val()
+    balance = $('#balance').val()
+    table = $('#datatables').DataTable();
+
+
+    // console.log(table.data())
+    // console.log(table.data().count())
+    // console.log(category)
+    $.ajax({
+          type: 'POST',
+          beforeSend: function(xhr, settings) {
+              function getCookie(name) {
+                  var cookieValue = null;
+                  if (document.cookie && document.cookie != '') {
+                      var cookies = document.cookie.split(';');
+                      for (var i = 0; i < cookies.length; i++) {
+                          var cookie = jQuery.trim(cookies[i]);
+                          // Does this cookie string begin with the name we want?
+                          if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                              cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                              break;
+                          }
+                      }
+                  }
+                  return cookieValue;
+              }
+              if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+                  // Only send the token to relative URLs i.e. locally.
+                  xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+              }
+          },
+          data: {
+            id: row_id,
+            transaction: transaction,
+            original_transaction: original_transaction,
+            category: category,
+            withdrawn : withdrawn,
+            deposited : deposited,
+            balance : balance,
+            file_name: "{{ file_name }}"
+          },
+          url: "{% url 'edit_csv' %}"
+      }).done(function(data) {
+          $('#myModal').modal('toggle');
+          var rowid = '#row_'+row_id;
+          mk.showNotification('top','right', 'success', data.msg);
+
+          // update row when finish editing
+          var temp = table.row(row_id-1).data();
+          // console.log(temp);
+          temp[1] = transaction;
+          temp[2] = withdrawn;
+          temp[3] = deposited;
+          temp[4] = balance;
+          temp[5] = category;
+          $('#datatables').dataTable().fnUpdate(temp, $('tr'+ rowid), undefined, false);
+
+      }).fail(function(data) {
+          console.log('errors happened: ' + data);
+      });
+  }
+</script>
+</script>
+{% endblock javascripts %}

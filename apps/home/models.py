@@ -11,6 +11,7 @@ from .path_rename import path_and_rename
 class Document(models.Model):
     submitter = models.ForeignKey(User, on_delete=models.CASCADE,)
     docfile = models.FileField(upload_to=path_and_rename)
+    date = models.DateTimeField(auto_now_add=True, blank=True)
     # / 'documents/%Y/%m/%d'
 
 class DictionaryCategories(models.Model):
