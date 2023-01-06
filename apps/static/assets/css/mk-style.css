@@ -158,3 +158,6 @@ span.cc{ color:#6d84b4 } */
     display: inline-flex;
 }
   
+.nav-link.success {
+    background-color: #4caf50!important;
+}

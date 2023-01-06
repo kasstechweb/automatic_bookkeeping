@@ -1,6 +1,6 @@
 {% extends "layouts/base.html" %}
 
-{% block title %} Upload statement {% endblock %} 
+{% block title %} Upload csv statement  {% endblock %} 
 
 <!-- Specific Page CSS goes HERE  -->
 {% block stylesheets %}
@@ -18,6 +18,43 @@
 {% endif %}  
 
 <div class="row justify-content-md-center">
+
+  <div class="col-mid-10">
+    <ul class="nav nav-pills nav-pills-primary nav-pills-icons justify-content-center">
+      <!-- <li class="nav-item">
+        <a class="nav-link active success">
+          <i class="material-icons">check_circle</i> Upload
+        </a>
+      </li> -->
+      <li class="nav-item">
+        <a class="nav-link active">
+          <i class="material-icons">upload</i> Upload
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link">
+          <i class="material-icons">sync</i> Process
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link">
+          <i class="material-icons">task</i> Missing Categories
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link">
+          <i class="material-icons">download</i> Download
+        </a>
+      </li>
+      
+      <li class="nav-item">
+        <a class="nav-link">
+          <i class="material-icons">description</i> Categories Report
+        </a>
+      </li>
+    </ul>
+  </div>
+
   <div class="col-md-10">
     <div class="card">
       <div class="card-header card-header-primary">
@@ -34,10 +71,12 @@
               <div class="cc-selector">
                   <input id="td" type="radio" name="bank" value="td" />
                   <label class="drinkcard-cc td" for="td"></label>
-                  <input id="rbc" type="radio" name="bank" value="rbc" />
-                  <label class="drinkcard-cc rbc"for="rbc"></label>
                   <input id="atb" type="radio" name="bank" value="atb" />
                   <label class="drinkcard-cc atb"for="atb"></label>
+                  <input id="rbc" type="radio" name="bank" value="rbc" />
+                  <label class="drinkcard-cc rbc" for="rbc"></label>
+                  <input id="cibc" type="radio" name="bank" value="cibc" />
+                  <label class="drinkcard-cc cibc" for="cibc"></label>
                   <input id="servus" type="radio" name="bank" value="servus" />
                   <label class="drinkcard-cc servus"for="servus"></label>
                   <input id="scotia" type="radio" name="bank" value="scotia" />

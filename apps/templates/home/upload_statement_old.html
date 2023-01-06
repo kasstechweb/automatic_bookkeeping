@@ -1,6 +1,6 @@
 {% extends "layouts/base.html" %}
 
-{% block title %} Upload csv statement  {% endblock %} 
+{% block title %} Upload statement {% endblock %} 
 
 <!-- Specific Page CSS goes HERE  -->
 {% block stylesheets %}
@@ -34,12 +34,14 @@
               <div class="cc-selector">
                   <input id="td" type="radio" name="bank" value="td" />
                   <label class="drinkcard-cc td" for="td"></label>
+                  <input id="rbc" type="radio" name="bank" value="rbc" />
+                  <label class="drinkcard-cc rbc"for="rbc"></label>
                   <input id="atb" type="radio" name="bank" value="atb" />
                   <label class="drinkcard-cc atb"for="atb"></label>
-                  <input id="rbc" type="radio" name="bank" value="rbc" />
-                  <label class="drinkcard-cc rbc" for="rbc"></label>
-                  <input id="cibc" type="radio" name="bank" value="cibc" />
-                  <label class="drinkcard-cc cibc" for="cibc"></label>
+                  <input id="servus" type="radio" name="bank" value="servus" />
+                  <label class="drinkcard-cc servus"for="servus"></label>
+                  <input id="scotia" type="radio" name="bank" value="scotia" />
+                  <label class="drinkcard-cc scotia"for="scotia"></label>
               </div>
             </div>
           </div>

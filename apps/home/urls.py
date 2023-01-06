@@ -24,7 +24,7 @@ urlpatterns = [
 
     path('categories/', views.categories, name='categories'),
 
-    path('upload_csv_statement/', views.upload_csv_statement, name='upload_csv_statement'),
+    # path('upload_csv_statement/', views.upload_csv_statement, name='upload_csv_statement'),
 
     # path('upload_statement_multiple/', views.upload_statement_multiple, name='upload_statement_multiple'),
     # path('categories_csv/', views.categories_csv, name='categories_csv'),
