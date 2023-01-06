@@ -16,6 +16,7 @@ from django.shortcuts import render
 from apps.home import functions, path_rename
 import ast
 import pandas as pd
+import os
 # td_pdftocsv, rbc_pdftocsv, atb_pdftocsv, servus_pdftocsv, scotia_pdftocsv, read_csv, td_process_csv
 
 
@@ -181,6 +182,7 @@ def download_csv(request):
     if request.method == "POST":
         print('download_csv post called')
         # file_id = request.POST.get('file_id')
+
         # if missing category already done skip
         missing_categories = request.POST.get('missing_categories')
         # check banks
@@ -202,15 +204,15 @@ def download_csv(request):
         else:
             files_ids = request.POST.get('files_ids')
             files_ids = ast.literal_eval(files_ids)
-            print(type(files_ids))
+            # print(type(files_ids))
             print(files_ids)
             missing_category_list = []
             for file_id in files_ids:
                 
-                print(file_id)
+                # print(file_id)
                 file = Document.objects.get(pk=file_id)
                 file_name = file.docfile
-                print(str(file_name).rsplit('.', 1)[1])
+                # print(str(file_name).rsplit('.', 1)[1])
                 file_ext = str(file_name).rsplit('.', 1)[1]
 
                 if file_ext == 'pdf':
@@ -242,13 +244,11 @@ def download_csv(request):
                     elif bank == 'cibc':
                         check_missing_category = functions.cibc_process_csv(file_name)
                         missing_category_list.append(check_missing_category)
-                
-                
             
             if True in missing_category_list: # there is a missing category ask user to add it before downloading csv
                 print('there is missing category')
                 # file_id = request.POST.get('file_id')
-                print(files_ids)
+                # print(files_ids)
                 # files_ids = request.POST.get('files_ids')
                 transactions = []
                 # files_name_download = []
@@ -259,6 +259,8 @@ def download_csv(request):
                     filename = Path(settings.MEDIA_ROOT + file_name + '.csv')
                     # print(functions.read_csv(filename))
                     transactions = transactions + functions.read_csv(filename)
+                    # remove the csv file after adding it to new combining file
+                    os.remove(filename)
                 # print(transactions)
                 
                 # combine transactions in one file for easier processing and editing
@@ -281,6 +283,16 @@ def download_csv(request):
                 file_name = str(new_file_path_name).rsplit('\\', 1)[1]
                 print(file_name)
                 categories = DictionaryCategories.objects.all()
+
+                # delete files and from db
+                for file_id in files_ids:
+                    file = Document.objects.get(pk=file_id)
+                    file_path_name = file.docfile
+                    # print(Path(settings.MEDIA_ROOT + str(file_path_name)))
+                    os.remove(Path(settings.MEDIA_ROOT + str(file_path_name)))
+                    # print(file_id)
+                    Document.objects.filter(pk=file_id).delete()
+
                 return render(request, 'home/missing_categories.html', 
                     {
                     'transactions': transactions,
@@ -312,13 +324,15 @@ def download_csv(request):
                 # else:
                 transactions = []
                 # files_name_download = []
-                print(files_ids)
+                # print(files_ids)
                 for file_id in files_ids:
                     file = Document.objects.get(pk=file_id)
                     file_name = str(file.docfile).rsplit('.', 1)[0]
                     filename = Path(settings.MEDIA_ROOT + file_name + '.csv')
                     # print(functions.read_csv(filename))
                     transactions = transactions + functions.read_csv(filename)
+                    # remove the csv file after adding it to new combining file
+                    os.remove(filename)
                 # print(transactions)
                 
                 # combine transactions in one file for easier processing and editing
@@ -333,16 +347,25 @@ def download_csv(request):
                 newdoc = Document(docfile = new_file_path_name)
                 newdoc.submitter = request.user
                 newdoc.save()
-                file_id = newdoc.pk
+                new_file_id = newdoc.pk
                 
                 
                 file_name_download = '/media/' + new_file_path_name
                 file_name = str(new_file_path_name).rsplit('\\', 1)[1]
                 
+                # delete files and from db
+                for file_id in files_ids:
+                    file = Document.objects.get(pk=file_id)
+                    file_path_name = file.docfile
+                    # print(Path(settings.MEDIA_ROOT + str(file_path_name)))
+                    os.remove(Path(settings.MEDIA_ROOT + str(file_path_name)))
+                    # print(file_id)
+                    Document.objects.filter(pk=file_id).delete()
+                print(file_id)
                 return render(request, 'home/download_csv.html', 
                         {
                         'file_name': file_name_download,
-                        'file_id': file_id,
+                        'file_id': new_file_id,
                         'bank': bank
                         })
     try:
