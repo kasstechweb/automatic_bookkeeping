@@ -191,7 +191,7 @@ def download_csv(request):
                     filename = Path(settings.MEDIA_ROOT + file_name + '.csv')
                     transactions = transactions + functions.read_csv(filename)
                     # remove the csv file after adding it to new combining file
-                    os.remove(filename)
+                    # os.remove(filename)
                 
                 # combine transactions in one file for easier processing and editing
                 df = pd.DataFrame(transactions)
@@ -232,7 +232,7 @@ def download_csv(request):
                     filename = Path(settings.MEDIA_ROOT + file_name + '.csv')
                     transactions = transactions + functions.read_csv(filename)
                     # remove the csv file after adding it to new combining file
-                    os.remove(filename)
+                    # os.remove(filename)
                 
                 # combine transactions in one file for easier processing and editing
                 df = pd.DataFrame(transactions)
@@ -331,8 +331,16 @@ def statements_history(request):
         #         })
     # using try to get the view template
     try:
-        
-        return render(request, 'home/statements_history.html',{'segment': 'statements_history'})
+        documents = Document.objects.filter( submitter_id = request.user)
+        for document in documents:
+            document.docfile = str(document.docfile).rsplit('\\', 1)[1]
+            print(document.docfile)
+            print(document.date)
+        return render(request, 'home/statements_history.html',
+                                {
+                                    'segment': 'statements_history',
+                                    'documents': documents
+                                })
 
     except template.TemplateDoesNotExist:
         html_template = loader.get_template('home/page-404.html')
