@@ -24,7 +24,10 @@ urlpatterns = [
 
     path('categories/', views.categories, name='categories'),
 
+    path('categories_summary/', views.categories_summary, name='categories_summary'),
+
     path('statements_history/', views.statements_history, name='statements_history'),
+
 
     # path('upload_csv_statement/', views.upload_csv_statement, name='upload_csv_statement'),
 

@@ -341,4 +341,183 @@ mk = {
           }).catch(swal.noop)
         }
       },
+
+      initDashboardPageCharts: function(summary) {
+        // console.log(summary.replace(new RegExp("&"+"#"+"x27;", "g"), "'"));
+        // console.log(JSON.parse(summary))
+        summary = summary.replace(new RegExp("&"+"#"+"x27;", "g"), "'");
+        summary = summary.replace(/'/g, '\"');
+        // console.log(summary)
+        summary = JSON.parse(summary)
+        // console.log(summary[0])
+        // console.log(JSON.parse("[" + summary + "]"))
+        labels = []
+        withdrawn = []
+        deposited = []
+        for (let i = 0; i < summary.length; i++) {
+          // sum = .replace(new RegExp("&"+"#"+"x27;", "g"), "'");
+          labels.push(i+1);
+          withdrawn.push(summary[i][1]);
+          deposited.push(summary[i][2]);
+          console.log(summary[i]);
+          // console.log(summary[i] + "<br>") ;
+        }
+        all_amount = withdrawn.concat(deposited)
+        console.log(all_amount)
+        console.log(Math.max(...all_amount))
+        // console.log(Math.max(...deposited))
+        // labels.push('test')
+        // console.log(labels)
+        if ($('#multipleBarsChart').length != 0 || $('#WithdrawnChart').length != 0 || $('#DepositedChart').length != 0) {
+
+          /*  **************** Simple Bar Chart - barchart ******************** */
+
+          var dataSimpleBarChart = {
+            labels: labels,
+            series: [
+              withdrawn
+            ]
+          };
+
+          var optionsSimpleBarChart = {
+            seriesBarDistance: 10,
+            high: Math.max(...all_amount),
+            axisX: {
+              showGrid: false
+            }, 
+            axisY: {
+              offset: 80,
+              labelInterpolationFnc: function(value) {
+                return Math.abs(value) > 999 ? Math.sign(value)*((Math.abs(value)/1000).toFixed(1)) + ' k' : Math.sign(value)*Math.abs(value)
+              },
+              scaleMinSpace: 15
+            }
+          };
+
+          var responsiveOptionsSimpleBarChart = [
+            ['screen and (max-width: 640px)', {
+              seriesBarDistance: 5,
+              axisX: {
+                labelInterpolationFnc: function(value) {
+                  return value[0];
+                }
+              }
+            }]
+          ];
+
+          var simpleBarChart = Chartist.Bar('#WithdrawnChart', dataSimpleBarChart, optionsSimpleBarChart, responsiveOptionsSimpleBarChart);
+
+          //start animation for the Emails Subscription Chart
+          md.startAnimationForBarChart(simpleBarChart);
+            
+          // /////////////////////////////// deposited /////////////////////
+
+              var dataDepositedChart = {
+                labels: labels,
+                series: [
+                  deposited
+                ]
+              };
+
+              var optionsDepositedChart = {
+                seriesBarDistance: 10,
+                high: Math.max(...all_amount),
+                axisX: {
+                  showGrid: false
+                }, 
+                axisY: {
+                  offset: 80,
+                  labelInterpolationFnc: function(value) {
+                    return Math.abs(value) > 999 ? Math.sign(value)*((Math.abs(value)/1000).toFixed(1)) + ' k' : Math.sign(value)*Math.abs(value)
+                  },
+                  scaleMinSpace: 15
+                }
+              };
+
+              var responsiveOptionsDepositedChart = [
+                ['screen and (max-width: 640px)', {
+                  seriesBarDistance: 5,
+                  axisX: {
+                    labelInterpolationFnc: function(value) {
+                      return value[0];
+                    }
+                  }
+                }]
+              ];
+
+              var depositedChart = Chartist.Bar('#DepositedChart', dataDepositedChart, optionsDepositedChart, responsiveOptionsDepositedChart);
+
+              //start animation for the Emails Subscription Chart
+              md.startAnimationForBarChart(depositedChart);
+
+          // multiple bars
+          var dataMultipleBarsChart = {
+            labels: labels,
+            series: [
+              withdrawn,
+              deposited
+            ]
+          };
+    
+          var optionsMultipleBarsChart = {
+            seriesBarDistance: 10,
+            // axisX: {
+            //   showGrid: true
+            // },
+            // low: -10,
+            high: Math.max(...all_amount),
+            height: '20rem',
+            // reverseData: true,
+            // horizontalBars: true,
+            axisX: {
+              offset: 60
+            },
+            axisY: {
+              offset: 80,
+              labelInterpolationFnc: function(value) {
+                return Math.abs(value) > 999 ? Math.sign(value)*((Math.abs(value)/1000).toFixed(1)) + ' k' : Math.sign(value)*Math.abs(value)
+              },
+              scaleMinSpace: 15
+            }
+            // stretch: true
+          };
+    
+          var responsiveOptionsMultipleBarsChart = [
+            ['screen and (max-width: 640px)', {
+              seriesBarDistance: 5,
+              axisX: {
+                labelInterpolationFnc: function(value) {
+                  return value[0];
+                }
+              }
+            }]
+          ];
+    
+          var multipleBarsChart = Chartist.Bar('#multipleBarsChart', dataMultipleBarsChart, optionsMultipleBarsChart, responsiveOptionsMultipleBarsChart);
+    
+          //start animation for the Emails Subscription Chart
+          mk.startAnimationForBarChart(multipleBarsChart);
+        }
+      },
+
+
+      startAnimationForBarChart: function(chart) {
+
+        chart.on('draw', function(data) {
+          if (data.type === 'bar') {
+            seq2++;
+            data.element.animate({
+              opacity: {
+                begin: seq2 * delays2,
+                dur: durations2,
+                from: 0,
+                to: 1,
+                easing: 'ease'
+              }
+            });
+          }
+        });
+    
+        seq2 = 0;
+      },
 };

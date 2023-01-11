@@ -18,13 +18,13 @@
 
 <div class="row justify-content-md-center">
 
-  <div class="col-mid-10">
+  <!-- <div class="col-mid-10">
     <ul class="nav nav-pills nav-pills-primary nav-pills-icons justify-content-center">
-      <!-- <li class="nav-item">
+      <li class="nav-item">
         <a class="nav-link active success">
           <i class="material-icons">check_circle</i> Upload
         </a>
-      </li> -->
+      </li>
       <li class="nav-item">
         <a class="nav-link active success">
           <i class="material-icons">check_circle</i> Upload
@@ -52,74 +52,128 @@
         </a>
       </li>
     </ul>
-  </div>
+  </div> -->
 
-  <div class="col-md-10">
-    <div class="card">
-      <div class="card-header card-header-primary">
-        <h4 class="card-title">Categories Report</h4>
-        <!-- <p class="card-category">Processing your state</p> -->
+  <div class="col-md-6">
+    <div class="card ">
+      <div class="card-header card-header-success card-header-icon">
+        <div class="card-icon">
+          <i class="material-icons">format_indent_increase</i>
+        </div>
+        <h4 class="card-title">Categories Summary</h4>
       </div>
       <div class="card-body">
-<!-- bank: {{ bank }} -->
-        <div>
-          <!-- <a href="#" class="btn btn-primary"  data-toggle="modal" data-target="#summaryModal">
-            
-            Categories Summary 
-            <i class="material-icons">format_indent_increase</i>
-          </a> -->
-          <form action="{% url 'categories_summary' %}" method="POST" class="post-form">
-            {% csrf_token %}
-            <input type="hidden" name="file_name" value="{{ file_name }}">
-            
-            <button type="submit" class="btn btn-primary">
-              Categories Summary
-              <i class="material-icons">format_indent_increase</i>
-            </button>
-            <div class="clearfix"></div>
-          </form>
+        <div class="row">
+          <div class="col-md-12">
+            <div class="table-responsive table-sales">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Category</th>
+                    <th>withdrawn</th>
+                    <th>deposited</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for x in summary %}
+                    <tr id="row_{{ forloop.counter }}">
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ x.0 }}</td>
+                        <td>{{ x.1 }}</td>
+                        <td>{{ x.2 }}</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          
+          
+
+          
         </div>
+      </div>
+    </div>
+  </div>
+
+<div class="col-md-6">
+
+  <div class="col-md-12">
+    <div class="card card-chart">
+      <div class="card-header card-header-primary">
+        <div id="WithdrawnChart" class="ct-chart"></div>
+      </div>
+      <div class="card-body">
+        <h4 class="card-title ">Withdrawn Chart</h4>
+        <!-- <p class="card-category">Bar Chart</p> -->
+      </div>
+    </div>
+  </div>
+  <div class="col-md-12">
+    <div class="card card-chart">
+      <div class="card-header card-header-success">
+        <div id="DepositedChart" class="ct-chart"></div>
+      </div>
+      <div class="card-body">
+        <h4 class="card-title ">Deposited Chart</h4>
+        <!-- <p class="card-category">Bar Chart</p> -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="col-md-12">
+  <div class="card card-chart">
+    <div class="card-header pb-0 card-header-primary">
+      <div id="multipleBarsChart" class="ct-chart"></div>
+      <h4 class="card-title text-center">
+        <i class="fa fa-circle redlegend"></i> Withdrawn and
+        <i class="fa fa-circle whitelegend"></i> Deposited Chart
+        <!-- <i class="fa fa-circle text-danger"></i> Windows Phone -->
+      </h4>
+    </div>
+    <div class="card-body m-auto">
+      
+      <!-- <h4 class="card-title "><div class="redsquare"></div> Withdrawn and <div class="whitesquare"></div> Deposited Chart</h4> -->
+      <!-- <p class="card-category">Bar Chart</p> -->
+    </div>
+  </div>
+</div>
+  <!-- <div class="col-md-10">
+    <div class="card">
+      <div class="card-header card-header-primary">
+        <h4 class="card-title">Categories Summary</h4>
+        
+      </div>
+      <div class="card-body">
+bank: {{ test }}
         <div class="material-datatables">
           <table id="datatables" class="table table-striped table-no-bordered table-hover" cellspacing="0" width="100%" style="width:100%">
             <thead>
               <tr>
                 <th>#</th>
-                <th>Transaction</th>
+                <th>Category</th>
                 <th>withdrawn</th>
                 <th>deposited</th>
-                <th>Balance</th>
-                <th>Category</th>
-                <th class="disabled-sorting text-right">Actions</th>
               </tr>
             </thead>
             <tfoot>
               <tr>
                 <th>#</th>
-                <th>Transaction</th>
+                <th>Category</th>
                 <th>withdrawn</th>
                 <th>deposited</th>
-                <th>Balance</th>
-                <th>Category</th>
-                <th class="text-right">Actions</th>
               </tr>
             </tfoot>
             <tbody>
-              {% for tr in transactions %}
+              {% for x in summary %}
                 <tr id="row_{{ forloop.counter }}">
                   <td>{{ forloop.counter }}</td>
-                    <td>{{ tr.1 }}</td>
-                    <td>{{ tr.2 }}</td>
-                    <td>{{ tr.3 }}</td>
-                    <td>{{ tr.4 }}</td>
-                    {% if tr.5 != 'False'%}
-                      <td>{{ tr.5 }}</td>
-                    {% else %}
-                      <td></td>
-                    {% endif %}
-                  <td class="td-actions text-right">
-                    <a href="#" class="btn btn-link btn-info btn-just-icon edit"  data-toggle="modal" data-target="#myModal"><i class="material-icons">edit</i></a>
-                    <a href="#" class="btn btn-link btn-danger btn-just-icon remove"><i class="material-icons">close</i></a>
-                  </td>
+                    <td>{{ x.0 }}</td>
+                    <td>{{ x.1 }}</td>
+                    <td>{{ x.2 }}</td>
                 </tr>
               {% endfor %}
 
@@ -128,9 +182,9 @@
           </table>
         </div>
 
-      </div> <!-- end card body -->
+      </div> 
     </div>
-  </div>
+  </div> -->
 </div>
 
 <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
@@ -143,6 +197,40 @@
         </button>
       </div>
       <div class="modal-body">
+
+          <!-- <form id="modal_form" class="form-horizontal" action="" method="">
+            {% csrf_token %}
+            <input type="hidden" name="row_id" id="row_id">
+            <div class="form-group">
+              <input id="transaction" class="form-control" type="text" name="transaction" required="true" placeholder="Transaction"/>
+            </div>
+
+            <div class="form-group">
+              <select class="selectpicker" id="category" name="category" data-width="100%" data-live-search="true" data-style="btn btn-primary " title="Select Categories">
+                {% for cat in categories %}
+                  <option value="{{ cat.name }}">{{ cat.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="form-group">
+              <input id="withdrawn" class="form-control" type="text" name="withdrawn" placeholder="withdrawn"/>
+            </div>
+
+            <div class="form-group">
+              <input id="deposited" class="form-control" type="text" name="deposited" placeholder="deposited"/>
+            </div>
+
+            <div class="form-group">
+              <input id="balance" class="form-control" type="text" name="balance" required="true" placeholder="balance"/>
+            </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary btn-link" onclick="edit_csv_ajax()">Save</button>
+            <button type="button" class="btn btn-danger btn-link" data-dismiss="modal">Close</button>
+          </div>
+        </form> -->
+
         <form id="modal_form" class="form-horizontal" action="" method="">
           {% csrf_token %}
           <input type="hidden" name="row_id" id="row_id">
@@ -171,6 +259,10 @@
           <div class="form-group">
             <input id="balance" class="form-control" type="text" name="balance" required="true" placeholder="balance"/>
           </div>
+
+          <!-- <div class="form-group">
+            <input id="amount" class="form-control" type="text" name="amount" required="true" placeholder="Amount"/>
+          </div> -->
 
           <div class="modal-footer">
             <button type="button" class="btn btn-primary btn-link" onclick="edit_csv_ajax()">
@@ -359,5 +451,14 @@
       });
   }
 </script>
+
+<script>
+  $(document).ready(function() {
+    // Javascript method's body can be found in assets/js/demos.js
+    mk.initDashboardPageCharts('{{ summary }}');
+
+    // md.initVectorMap();
+
+  });
 </script>
 {% endblock javascripts %}

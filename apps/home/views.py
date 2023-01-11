@@ -311,31 +311,12 @@ def categories(request):
 @login_required(login_url="/login/")
 def statements_history(request):
     context = {}
-    # if request.method == "POST":
-        # file_id = request.POST.get('file_id')
-        
-        # file = Document.objects.get(pk=file_id)
-        # filename = Path(settings.MEDIA_ROOT + str(file.docfile))
-        # transactions = functions.read_csv(filename)
-        # categories = DictionaryCategories.objects.all()
-        # bank = request.POST.get('bank')
-
-        # file_name = str(filename).rsplit('\\', 1)[1]
-        # return render(request, 'home/categories.html', 
-        #         {
-        #         'categories': categories,
-        #         'transactions': transactions,
-        #         # 'zipped_data': zipped_data,
-        #         'file_name': file_name,
-        #         'bank': bank
-        #         })
-    # using try to get the view template
     try:
         documents = Document.objects.filter( submitter_id = request.user)
         for document in documents:
             document.docfile = str(document.docfile).rsplit('\\', 1)[1]
-            print(document.docfile)
-            print(document.date)
+            # print(document.docfile)
+            # print(document.date)
         return render(request, 'home/statements_history.html',
                                 {
                                     'segment': 'statements_history',
@@ -349,3 +330,69 @@ def statements_history(request):
     except:
         html_template = loader.get_template('home/page-500.html')
         return HttpResponse(html_template.render(context, request))
+
+# categories_summary
+@login_required(login_url="/login/")
+def categories_summary(request):
+    if request.method == "POST":
+        file_name = request.POST.get('file_name')
+        # print(file_name)
+        transactions = functions.read_csv(Path(settings.MEDIA_ROOT + '/statements/' + file_name) )
+        categories = DictionaryCategories.objects.all()
+        summary = []
+
+        # for tr in transactions:
+        #     print(tr)
+
+        for cat in categories:
+            duplicates = []
+            for index,tr in enumerate(transactions):
+                # print(tr)
+                if cat.name == tr[5]:
+                    duplicates.append(index)
+            
+            withdrawn = 0.00
+            deposited = 0.00
+            for dup in duplicates:
+                # print(transactions[dup][2])
+                if transactions[dup][2] != '':
+                    amount = functions.clean_amount(transactions[dup][2])
+                    withdrawn += float(amount)
+                if transactions[dup][3] != '':
+                    amount = functions.clean_amount(transactions[dup][3])
+                    deposited += float(amount)
+            # print('>> ' + str(num1) + ' ' + str(num2))
+            
+            # # format floats to 2 decimals
+            # withdrawn = format(withdrawn, '.2f')
+            # deposited = format(deposited, '.2f')
+            print(withdrawn)
+            # if cat.name in transactions:
+            if withdrawn != 0.00 or deposited != 0.00:
+                summary.append([cat.name, format(withdrawn, '.2f'), format(deposited, '.2f')])
+
+        for x in summary:
+            print(x)
+        return render(request, 'home/categories_summary.html',
+                                {
+                                    'summary': summary
+                                })
+
+    # try:
+    #     # documents = Document.objects.filter( submitter_id = request.user)
+    #     # for document in documents:
+    #     #     document.docfile = str(document.docfile).rsplit('\\', 1)[1]
+    #     #     print(document.docfile)
+    #     #     print(document.date)
+    #     return render(request, 'home/categories_summary.html',
+    #                             {
+    #                                 'segment': 'categories_summary',
+    #                             })
+
+    # except template.TemplateDoesNotExist:
+    #     html_template = loader.get_template('home/page-404.html')
+    #     return HttpResponse(html_template.render(context, request))
+
+    # except:
+    #     html_template = loader.get_template('home/page-500.html')
+    #     return HttpResponse(html_template.render(context, request))
