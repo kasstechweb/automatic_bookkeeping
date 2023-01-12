@@ -1,0 +1,186 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Page User {% endblock %} 
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+{% if msg %}
+  <script>
+    $(document).ready(function() {
+      mk.showNotification('top','right', 'danger', '{{ msg | safe }}');
+    });
+  </script>
+{% endif %}  
+
+          <div class="row">
+            <div class="col-md-8">
+              <div class="card">
+                <div class="card-header card-header-primary">
+                  <h4 class="card-title">Edit {{ current_user.username }} Profile </h4>
+                </div>
+                <div class="card-body">
+                  <form action="" method="" class="post-form">
+                    {% csrf_token %}
+                    <input type="hidden" id="user_id" name="user_id" value="{{ current_user.id }}">
+                    <div class="row">
+                      <div class="col-md-12">
+                        <div class="form-group">
+                          <label class="bmd-label-floating">Username</label>
+                          <input type="text" id="username" class="form-control" name="username" value="{{ current_user.username }}" required>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="col-md-12">
+                        <div class="form-group">
+                          <label class="bmd-label-floating">Email address</label>
+                          <input type="email" id="email" class="form-control" name="email" value="{{ current_user.email }}" required>
+                        </div>
+                      </div>
+                    </div>
+                      
+                    <button type="button" class="btn btn-primary pull-right"  onclick="update_profile_ajax()">Update Profile</button>
+                    <div class="clearfix"></div>
+                  </form>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-md-4">
+              <div class="card card-profile">
+                <div class="card-header card-header-primary">
+                  <h4 class="card-title">Update Password</h4>
+                </div>
+                <div class="card-body">
+                  <!-- <h6 class="card-category text-gray">
+                    {{ current_user.username }}
+                  </h6> -->
+                  <form>
+                    <div class="row">
+                      <div class="col-md-12">
+                        <div class="form-group">
+                          <label class="bmd-label-floating" style="left: 0;">New Password</label>
+                          <input type="password" id="password" name="password" class="form-control" autocomplete="on" required>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="col-md-12">
+                        <div class="form-group">
+                          <label class="bmd-label-floating" style="left: 0;">Confirm New Password</label>
+                          <input type="password" id="confirm_password" name="confirm_password" autocomplete="on" class="form-control" required>
+                        </div>
+                      </div>
+                    </div>
+
+                    <button type="button" class="btn btn-primary pull-right" onclick="update_password_ajax()">Change Password</button>
+                    <div class="clearfix"></div>
+                  </form>
+                </div>
+              </div>
+            </div>
+
+
+          </div>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+
+<script>
+  function update_profile_ajax(){
+    user_id = $('#user_id').val();
+    username = $('#username').val();
+    email = $('#email').val();
+
+
+    $.ajax({
+          type: 'POST',
+          beforeSend: function(xhr, settings) {
+              function getCookie(name) {
+                  var cookieValue = null;
+                  if (document.cookie && document.cookie != '') {
+                      var cookies = document.cookie.split(';');
+                      for (var i = 0; i < cookies.length; i++) {
+                          var cookie = jQuery.trim(cookies[i]);
+                          // Does this cookie string begin with the name we want?
+                          if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                              cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                              break;
+                          }
+                      }
+                  }
+                  return cookieValue;
+              }
+              if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+                  // Only send the token to relative URLs i.e. locally.
+                  xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+              }
+          },
+          data: {
+            username: username,
+            email: email,
+            user_id: user_id
+          },
+          url: "{% url 'update_profile' %}"
+      }).done(function(data) {
+          mk.showNotification('top','right', 'success', data.msg);
+          // console.log(data)
+      }).fail(function(data) {
+          console.log('errors happened: ' + data);
+      });
+  }
+
+
+
+  function update_password_ajax(){
+    password = $('#password').val();
+    confirm_password = $('#confirm_password').val();
+    user_id = $('#user_id').val();
+
+    $.ajax({
+          type: 'POST',
+          beforeSend: function(xhr, settings) {
+              function getCookie(name) {
+                  var cookieValue = null;
+                  if (document.cookie && document.cookie != '') {
+                      var cookies = document.cookie.split(';');
+                      for (var i = 0; i < cookies.length; i++) {
+                          var cookie = jQuery.trim(cookies[i]);
+                          // Does this cookie string begin with the name we want?
+                          if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                              cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                              break;
+                          }
+                      }
+                  }
+                  return cookieValue;
+              }
+              if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+                  // Only send the token to relative URLs i.e. locally.
+                  xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+              }
+          },
+          data: {
+            password: password,
+            confirm_password: confirm_password,
+            user_id: user_id
+          },
+          url: "{% url 'update_password' %}"
+      }).done(function(data) {
+        if (data.status == 400) {
+          mk.showNotification('top','right', 'danger', data.msg);
+        }else{
+          mk.showNotification('top','right', 'success', data.msg);
+        }
+          // console.log(data)
+      }).fail(function(data) {
+          console.log('errors happened: ' + data);
+      });
+  }
+</script>
+
+{% endblock javascripts %}

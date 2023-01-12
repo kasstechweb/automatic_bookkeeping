@@ -4,7 +4,8 @@ from django.conf import settings
 from django.urls import path, re_path
 from apps.home import views
 from django.conf.urls.static import static
-from .functions import remove_from_csv, edit_csv, edit_csv_and_dictionary
+# from .functions import remove_from_csv, edit_csv, edit_csv_and_dictionary
+from apps.home import functions
 # from .views import (
 #     upload_statement,
 # )
@@ -12,7 +13,7 @@ from .functions import remove_from_csv, edit_csv, edit_csv_and_dictionary
 urlpatterns = [
 
     # The home page
-    path('', views.index, name='home'),
+    path('', views.upload_statement, name='home'),
 
     # Matches any html file
     # re_path(r'^.*\.*', views.pages, name='pages'),
@@ -28,6 +29,8 @@ urlpatterns = [
 
     path('statements_history/', views.statements_history, name='statements_history'),
 
+    path('profile/', views.profile, name='profile'),
+
 
     # path('upload_csv_statement/', views.upload_csv_statement, name='upload_csv_statement'),
 
@@ -35,9 +38,12 @@ urlpatterns = [
     # path('categories_csv/', views.categories_csv, name='categories_csv'),
 
     # functions urls
-    path('remove_from_csv/', remove_from_csv, name='remove_from_csv'),
-    path('edit_csv_and_dictionary/', edit_csv_and_dictionary, name='edit_csv_and_dictionary'),
-    path('edit_csv/', edit_csv, name='edit_csv'),
+    path('remove_from_csv/', functions.remove_from_csv, name='remove_from_csv'),
+    path('edit_csv_and_dictionary/', functions.edit_csv_and_dictionary, name='edit_csv_and_dictionary'),
+    path('edit_csv/', functions.edit_csv, name='edit_csv'),
+
+    path('update_profile/', functions.update_profile, name='update_profile'),
+    path('update_password/', functions.update_password, name='update_password')
 
     # path('upload_statement/', views.upload_statement, name='upload_statement'),
 ]

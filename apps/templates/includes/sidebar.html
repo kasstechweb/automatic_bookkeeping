@@ -9,12 +9,12 @@
         <ul class="nav">
         {% if request.user.is_authenticated %}
 
-          <li class="nav-item {% if 'index' in segment %} active {% endif %}">
+          <!-- <li class="nav-item {% if 'index' in segment %} active {% endif %}">
             <a class="nav-link" href="/">
               <i class="material-icons">dashboard</i>
               <p>Dashboard</p>
             </a>
-          </li>
+          </li> -->
           <li class="nav-item {% if 'upload_statement' in segment %} active {% endif %}">
             <a class="nav-link" href="/upload_statement">
               <i class="material-icons">upload</i>
@@ -31,8 +31,8 @@
 
           <!-- segment : {{ segment }} -->
           
-          <li class="nav-item {% if 'page-user' in segment %} active {% endif %}">
-            <a class="nav-link" href="/page-user.html">
+          <li class="nav-item {% if 'profile' in segment %} active {% endif %}">
+            <a class="nav-link" href="/profile">
               <i class="material-icons">person</i>
               <p>User Profile</p>
             </a>

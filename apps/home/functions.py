@@ -705,3 +705,37 @@ def path_and_rename(ext):
     filename = '{}.{}'.format(uuid4().hex, ext)
     # return the whole path to the file
     return os.path.join(upload_to, filename)
+
+def update_profile(request):
+    print(request.POST.get('user_id'))
+    user = User.objects.get(pk = request.POST.get('user_id'))
+    user.username = request.POST.get('username')
+    user.email = request.POST.get('email')
+    user.save()
+
+    data = {'status': 200,
+            'msg': 'update username/email success!'
+            }
+    return JsonResponse(data)
+
+def update_password(request):
+    print(request.POST.get('user_id'))
+    
+    # user.username = request.POST.get('username')
+    # user.email = request.POST.get('email')
+    password = request.POST.get('password')
+    confirm_password = request.POST.get('confirm_password')
+    if password == confirm_password:
+        user = User.objects.get(pk = request.POST.get('user_id'))
+        user.set_password(password)
+        user.save()
+        data = {'status': 200,
+            'msg': 'change password success!'
+            }
+        return JsonResponse(data)
+    else:
+        data = {'status': 400,
+            'msg': 'The two password fields didn’t match!'
+            }
+        return JsonResponse(data)
+    

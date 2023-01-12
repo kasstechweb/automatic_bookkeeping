@@ -396,3 +396,25 @@ def categories_summary(request):
     # except:
     #     html_template = loader.get_template('home/page-500.html')
     #     return HttpResponse(html_template.render(context, request))
+
+
+# process statement page and go to download page 
+@login_required(login_url="/login/")
+def profile(request):
+    context = {}
+    current_user = request.user
+    try:
+        return render(request, 'home/profile.html', 
+            {
+                'segment': 'profile',
+                'current_user': current_user
+            })
+
+    except template.TemplateDoesNotExist:
+
+        html_template = loader.get_template('home/page-404.html')
+        return HttpResponse(html_template.render(context, request))
+
+    except:
+        html_template = loader.get_template('home/page-500.html')
+        return HttpResponse(html_template.render(context, request))
