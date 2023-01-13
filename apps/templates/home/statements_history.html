@@ -56,7 +56,7 @@
                       <a href="javascript:{}" class="btn btn-link btn-info btn-just-icon view" onclick="document.getElementById('category_form_{{ document.id }}').submit();">
                         <i class="material-icons">dvr</i>
                       </a>
-                    <!-- <a href="#" class="btn btn-link btn-danger btn-just-icon remove"><i class="material-icons">close</i></a> -->
+                    <a href="#" class="btn btn-link btn-danger btn-just-icon remove" onclick="delete_statement('{{ document.id }}')"><i class="material-icons">close</i></a>
                     </form>
                   </td>
                 </tr>
@@ -95,10 +95,11 @@
     // var table = $('#datatable').DataTable();
 
     // Edit record
-    // table.on('click', '.view', function() {
-    //   $tr = $(this).closest('tr');
-    //   var data = table.row($tr).data();
-    //   console.log('You press on Row:-' + data[0] + '-' + data[1] + '-' + data[2] );
+    table.on('click', '.remove', function() {
+      $tr = $(this).closest('tr');
+      var data = table.row($tr).data();
+      // console.log('You press on Row:-' + data[0] + '-' + data[1] + '-' + data[2] );
+      console.log(data[0])
     //   $('#transaction').val(data[1]);
     //   $('#original_transaction').val(data[1]);
 
@@ -116,7 +117,9 @@
 
     // $('#myModal').on('hidden.bs.modal', function () {
     //   $("html").addClass('perfect-scrollbar-on')
-    // });
+
+    
+    });
 
 
     
@@ -124,20 +127,7 @@
 </script>
 
 <script>
-    function edit_csv_ajax(id){
-    row_id = $('#row_id').val();
-    transaction = $('#transaction').val();
-    original_transaction = $('#original_transaction').val();
-    category = $('#category').val()
-    withdrawn = $('#withdrawn').val()
-    deposited = $('#deposited').val()
-    balance = $('#balance').val()
-    table = $('#datatables').DataTable();
-
-
-    // console.log(table.data())
-    // console.log(table.data().count())
-    // console.log(category)
+  function delete_statement(id){
     $.ajax({
           type: 'POST',
           beforeSend: function(xhr, settings) {
@@ -162,35 +152,95 @@
               }
           },
           data: {
-            id: row_id,
-            transaction: transaction,
-            original_transaction: original_transaction,
-            category: category,
-            withdrawn : withdrawn,
-            deposited : deposited,
-            balance : balance,
-            file_name: "{{ file_name }}"
+            file_id: id
           },
-          url: "{% url 'edit_csv' %}"
+          url: "{% url 'delete_statement' %}"
       }).done(function(data) {
-          $('#myModal').modal('toggle');
-          var rowid = '#row_'+row_id;
-          mk.showNotification('top','right', 'success', data.msg);
+          // $('#myModal').modal('toggle');
+          // var rowid = '#row_'+row_id;
+          // mk.showNotification('top','right', 'success', data.msg);
 
-          // update row when finish editing
-          var temp = table.row(row_id-1).data();
-          // console.log(temp);
-          temp[1] = transaction;
-          temp[2] = withdrawn;
-          temp[3] = deposited;
-          temp[4] = balance;
-          temp[5] = category;
-          $('#datatables').dataTable().fnUpdate(temp, $('tr'+ rowid), undefined, false);
-
+          // // update row when finish editing
+          // var temp = table.row(row_id-1).data();
+          // // console.log(temp);
+          // temp[1] = transaction;
+          // temp[2] = withdrawn;
+          // temp[3] = deposited;
+          // temp[4] = balance;
+          // temp[5] = category;
+          // $('#datatables').dataTable().fnUpdate(temp, $('tr'+ rowid), undefined, false);
+          location.reload();
+        console.log(data.msg)
       }).fail(function(data) {
           console.log('errors happened: ' + data);
       });
   }
-</script>
+  //   function edit_csv_ajax(id){
+  //   row_id = $('#row_id').val();
+  //   transaction = $('#transaction').val();
+  //   original_transaction = $('#original_transaction').val();
+  //   category = $('#category').val()
+  //   withdrawn = $('#withdrawn').val()
+  //   deposited = $('#deposited').val()
+  //   balance = $('#balance').val()
+  //   table = $('#datatables').DataTable();
+
+
+  //   // console.log(table.data())
+  //   // console.log(table.data().count())
+  //   // console.log(category)
+  //   $.ajax({
+  //         type: 'POST',
+  //         beforeSend: function(xhr, settings) {
+  //             function getCookie(name) {
+  //                 var cookieValue = null;
+  //                 if (document.cookie && document.cookie != '') {
+  //                     var cookies = document.cookie.split(';');
+  //                     for (var i = 0; i < cookies.length; i++) {
+  //                         var cookie = jQuery.trim(cookies[i]);
+  //                         // Does this cookie string begin with the name we want?
+  //                         if (cookie.substring(0, name.length + 1) == (name + '=')) {
+  //                             cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+  //                             break;
+  //                         }
+  //                     }
+  //                 }
+  //                 return cookieValue;
+  //             }
+  //             if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+  //                 // Only send the token to relative URLs i.e. locally.
+  //                 xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+  //             }
+  //         },
+  //         data: {
+  //           id: row_id,
+  //           transaction: transaction,
+  //           original_transaction: original_transaction,
+  //           category: category,
+  //           withdrawn : withdrawn,
+  //           deposited : deposited,
+  //           balance : balance,
+  //           file_name: "{{ file_name }}"
+  //         },
+  //         url: "{% url 'edit_csv' %}"
+  //     }).done(function(data) {
+  //         $('#myModal').modal('toggle');
+  //         var rowid = '#row_'+row_id;
+  //         mk.showNotification('top','right', 'success', data.msg);
+
+  //         // update row when finish editing
+  //         var temp = table.row(row_id-1).data();
+  //         // console.log(temp);
+  //         temp[1] = transaction;
+  //         temp[2] = withdrawn;
+  //         temp[3] = deposited;
+  //         temp[4] = balance;
+  //         temp[5] = category;
+  //         $('#datatables').dataTable().fnUpdate(temp, $('tr'+ rowid), undefined, false);
+
+  //     }).fail(function(data) {
+  //         console.log('errors happened: ' + data);
+  //     });
+  // }
 </script>
 {% endblock javascripts %}

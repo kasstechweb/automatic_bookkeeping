@@ -13,7 +13,7 @@ import pandas as pd
 from collections import namedtuple
 import csv
 from unidecode import unidecode
-from .models import DictionaryCategories, DictionarySubcategories
+from .models import DictionaryCategories, DictionarySubcategories, Document
 
 # from .views import get_category, get_all_sub_categories
 
@@ -739,3 +739,17 @@ def update_password(request):
             }
         return JsonResponse(data)
     
+def delete_statement(request):
+    print(request.POST.get('file_id'))
+    file_id = request.POST.get('file_id')
+    document = Document.objects.get(pk=file_id)
+    file_path_name = document.docfile
+    print(file_path_name)
+    os.remove(Path(settings.MEDIA_ROOT + str(file_path_name)))
+    # document.delete()
+    Document.objects.filter(pk=file_id).delete()
+
+    data = {'status': 200,
+            'msg': 'change password success!'
+            }
+    return JsonResponse(data)

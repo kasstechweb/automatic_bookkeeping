@@ -43,7 +43,8 @@ urlpatterns = [
     path('edit_csv/', functions.edit_csv, name='edit_csv'),
 
     path('update_profile/', functions.update_profile, name='update_profile'),
-    path('update_password/', functions.update_password, name='update_password')
+    path('update_password/', functions.update_password, name='update_password'),
+    path('delete_statement/', functions.delete_statement, name='delete_statement')
 
     # path('upload_statement/', views.upload_statement, name='upload_statement'),
 ]
