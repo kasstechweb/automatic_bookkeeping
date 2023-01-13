@@ -313,6 +313,7 @@ def rbc_pdftocsv(request, file_name):
 
 # function to convert atb bank pdf to csv file
 def atb_pdftocsv(request, file_name):
+    print('atb pdf called')
     missing_category = False
     # Inv = namedtuple('Inv', 'date_charged date_posted description amount category')
     text = '' # new line
@@ -477,6 +478,7 @@ def td_process_csv(file_name):
 
 # atb function to read csv file and add categories and check if missing category
 def atb_process_csv(file_name):
+    print('atb csv called')
     missing_category = False
     sub_categories = DictionarySubcategories.objects.all()
     transactions = read_csv(settings.MEDIA_ROOT + "/" + str(file_name))

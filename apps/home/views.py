@@ -148,6 +148,7 @@ def download_csv(request):
             
             missing_category_list = []
             for file_id in files_ids:
+                # print(file_id)
                 file = Document.objects.get(pk=file_id)
                 file_name = file.docfile
                 file_ext = str(file_name).rsplit('.', 1)[1]
@@ -186,6 +187,7 @@ def download_csv(request):
                 transactions = []
                 
                 for file_id in files_ids:
+                    print(file_id)
                     file = Document.objects.get(pk=file_id)
                     file_name = str(file.docfile).rsplit('.', 1)[0]
                     filename = Path(settings.MEDIA_ROOT + file_name + '.csv')
@@ -213,6 +215,9 @@ def download_csv(request):
                     file = Document.objects.get(pk=file_id)
                     file_path_name = file.docfile
                     os.remove(Path(settings.MEDIA_ROOT + str(file_path_name)))
+                    file_no_ext = str(file.docfile).rsplit('.', 1)[0]
+                    file_name_csv = file_no_ext + '.csv'
+                    os.remove(Path(settings.MEDIA_ROOT + str(file_name_csv)))
                     Document.objects.filter(pk=file_id).delete()
 
                 return render(request, 'home/missing_categories.html', 
@@ -253,6 +258,9 @@ def download_csv(request):
                     file = Document.objects.get(pk=file_id)
                     file_path_name = file.docfile
                     os.remove(Path(settings.MEDIA_ROOT + str(file_path_name)))
+                    file_no_ext = str(file.docfile).rsplit('.', 1)[0]
+                    file_name_csv = file_no_ext + '.csv'
+                    os.remove(Path(settings.MEDIA_ROOT + str(file_name_csv)))
                     Document.objects.filter(pk=file_id).delete()
 
                 return render(request, 'home/download_csv.html', 
@@ -366,13 +374,17 @@ def categories_summary(request):
             # # format floats to 2 decimals
             # withdrawn = format(withdrawn, '.2f')
             # deposited = format(deposited, '.2f')
-            print(withdrawn)
+            # print(withdrawn)
             # if cat.name in transactions:
             if withdrawn != 0.00 or deposited != 0.00:
                 summary.append([cat.name, format(withdrawn, '.2f'), format(deposited, '.2f')])
 
         for x in summary:
             print(x)
+        with open(settings.MEDIA_ROOT + "Output.txt", "w") as f:
+            for line in summary:
+                f.write(f"{line}\n")
+
         return render(request, 'home/categories_summary.html',
                                 {
                                     'summary': summary
