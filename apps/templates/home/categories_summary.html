@@ -61,8 +61,21 @@
 
   <div class="col-md-12">
     <div class="card card-chart">
-      <div class="card-body m-auto">
-        <a href="#" class="btn btn-success">
+      <div class="card-header card-header-icon card-header-rose">
+        <div class="card-icon">
+          <i class="material-icons">corporate_fare</i>
+        </div>
+        <h4 class="card-title">{{ company_details.name}}
+          <small>- {{ company_details.phone}}</small>
+          <p><small>{{ company_details.street}} - {{ company_details.city}} - {{ company_details.province}} - {{ company_details.zip}}</small></p>
+        </h4>
+      </div>
+      <div class="card-body pt-0 m-auto">
+        <!-- <h4 class="card-title "></h4> -->
+        <p class="card-category">You can edit company details in user profile</p>
+
+        <!-- <p class="card-category">{{ company_details.street}} - {{ company_details.city}} - {{ company_details.province}} - {{ company_details.zip}}</p> -->
+        <a href="{{ gfi_file}}" target="_self" class="btn btn-success">
             <span class="btn-label">
               <i class="material-icons">download</i>
             </span>

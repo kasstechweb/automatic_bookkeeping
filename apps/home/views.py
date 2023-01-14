@@ -344,11 +344,13 @@ def statements_history(request):
 def categories_summary(request):
     if request.method == "POST":
         file_name = request.POST.get('file_name')
-        # print(file_name)
+        print(file_name)
         transactions = functions.read_csv(Path(settings.MEDIA_ROOT + '/statements/' + file_name) )
         categories = DictionaryCategories.objects.all()
         summary = []
 
+        current_user = request.user
+        company_details = Company.objects.get(user_id = current_user.id)
         # for tr in transactions:
         #     print(tr)
 
@@ -381,8 +383,19 @@ def categories_summary(request):
 
         for x in summary:
             print(x)
-        line = "test\n"
-        with open(settings.MEDIA_ROOT + "Output.txt", "w") as f:
+        line = '"GIFI01","","","","","Intuit Inc.","","","","","QuickBooks Online","","",'
+        line += '"' + str(company_details.phone) + '",'
+        line += '"' + str(company_details.name) + '",'
+        line += '"' + str(company_details.street) + '",'
+        line += '"' + str(company_details.city) + '",'
+        line += '"' + str(company_details.province) + '",'
+        line += '"' + str(company_details.zip) + '",'
+        line += '"","","",""'
+        line += '\n'
+
+        new_filename = str(file_name).rsplit('.', 1)[0]
+        print(new_filename)
+        with open(settings.MEDIA_ROOT + '/statements/' + new_filename + ".gfi", "w") as f:
             for row in summary:
                 category = row[0]
                 categories = DictionaryCategories.objects.get(name = category)
@@ -397,9 +410,12 @@ def categories_summary(request):
                 f.write(line)
                 line = ''
 
+        gfi_file = '/media/statements/' + new_filename + ".gfi"
         return render(request, 'home/categories_summary.html',
                                 {
-                                    'summary': summary
+                                    'summary': summary,
+                                    'company_details': company_details,
+                                    'gfi_file': gfi_file
                                 })
 
     # try:
