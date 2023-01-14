@@ -23,6 +23,10 @@ class DictionaryCategories(models.Model):
     class Meta:
         managed = False
         db_table = 'dictionary_categories'
+        ordering = ['id']
+
+    def __str__(self):
+        return self.name
 
 
 class DictionarySubcategories(models.Model):
@@ -32,6 +36,7 @@ class DictionarySubcategories(models.Model):
     class Meta:
         managed = False
         db_table = 'dictionary_subcategories'
+        ordering = ['id']
 
 
 class Company(models.Model):
@@ -46,3 +51,4 @@ class Company(models.Model):
     class Meta:
         managed = False
         db_table = 'company'
+        ordering = ['id']
