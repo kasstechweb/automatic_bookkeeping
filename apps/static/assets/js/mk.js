@@ -381,7 +381,7 @@ mk = {
 
           var optionsSimpleBarChart = {
             seriesBarDistance: 10,
-            high: Math.max(...all_amount),
+            high: Math.max(...withdrawn),
             axisX: {
               showGrid: false
             }, 
@@ -421,7 +421,7 @@ mk = {
 
               var optionsDepositedChart = {
                 seriesBarDistance: 10,
-                high: Math.max(...all_amount),
+                high: Math.max(...deposited),
                 axisX: {
                   showGrid: false
                 }, 

@@ -400,14 +400,16 @@ def categories_summary(request):
                 category = row[0]
                 categories = DictionaryCategories.objects.get(name = category)
                 code = categories.code
-                withdrawn = row[1]
-                deposited = row[2]
-                line += '"' + str(code) + '",'
-                if withdrawn != 0.00:
-                    line += withdrawn + '\n'
-                elif deposited != 0.00:
-                    line += deposited + '\n'
-                f.write(line)
+
+                if code != 0:
+                    withdrawn = row[1]
+                    deposited = row[2]
+                    line += '"' + str(code) + '",'
+                    if withdrawn != 0.00:
+                        line += withdrawn + '\n'
+                    elif deposited != 0.00:
+                        line += deposited + '\n'
+                    f.write(line)
                 line = ''
 
         gfi_file = '/media/statements/' + new_filename + ".gfi"
