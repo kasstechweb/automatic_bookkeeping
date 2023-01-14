@@ -2,6 +2,8 @@
 
 from django.db import models
 from django.contrib.auth.models import User
+
+from django.conf import settings
 # from .functions import path_and_rename
 # Create your models here.
 
@@ -16,6 +18,7 @@ class Document(models.Model):
 
 class DictionaryCategories(models.Model):
     name = models.CharField(max_length=255)
+    code = models.IntegerField()
 
     class Meta:
         managed = False
@@ -29,3 +32,17 @@ class DictionarySubcategories(models.Model):
     class Meta:
         managed = False
         db_table = 'dictionary_subcategories'
+
+
+class Company(models.Model):
+    name = models.CharField(max_length=255, blank=True, null=True)
+    phone = models.IntegerField(blank=True, null=True)
+    street = models.CharField(max_length=255, blank=True, null=True)
+    city = models.CharField(max_length=255, blank=True, null=True)
+    province = models.CharField(max_length=255, blank=True, null=True)
+    zip = models.CharField(max_length=255, blank=True, null=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, models.DO_NOTHING)
+
+    class Meta:
+        managed = False
+        db_table = 'company'

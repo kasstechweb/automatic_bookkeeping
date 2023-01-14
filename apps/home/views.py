@@ -8,7 +8,7 @@ from django.template import loader
 from django.urls import reverse
 from django.conf import settings
 
-from .models import DictionaryCategories, DictionarySubcategories, Document
+from .models import DictionaryCategories, DictionarySubcategories, Document, Company
 
 # from django.shortcuts import render  
 from .forms import DocumentForm, DocumentCSVForm, DocumentMultipleForm
@@ -381,9 +381,21 @@ def categories_summary(request):
 
         for x in summary:
             print(x)
+        line = "test\n"
         with open(settings.MEDIA_ROOT + "Output.txt", "w") as f:
-            for line in summary:
-                f.write(f"{line}\n")
+            for row in summary:
+                category = row[0]
+                categories = DictionaryCategories.objects.get(name = category)
+                code = categories.code
+                withdrawn = row[1]
+                deposited = row[2]
+                line += '"' + str(code) + '",'
+                if withdrawn != 0.00:
+                    line += withdrawn + '\n'
+                elif deposited != 0.00:
+                    line += deposited + '\n'
+                f.write(line)
+                line = ''
 
         return render(request, 'home/categories_summary.html',
                                 {
@@ -415,11 +427,30 @@ def categories_summary(request):
 def profile(request):
     context = {}
     current_user = request.user
+    if Company.objects.filter(user_id = current_user.id).exists():
+        user_company = Company.objects.get(user_id = current_user.id)
+    else:
+        user_company = ''
+    print(user_company)
+    if user_company.name == None:
+        user_company.name = ''
+    if user_company.phone == None:
+        user_company.phone = ''
+    if user_company.street == None:
+        user_company.street = ''
+    if user_company.city == None:
+        user_company.city = ''
+    if user_company.province == None:
+        user_company.province = ''
+    if user_company.zip == None:
+        user_company.zip = ''
+    print(user_company.street)
     try:
         return render(request, 'home/profile.html', 
             {
                 'segment': 'profile',
-                'current_user': current_user
+                'current_user': current_user,
+                'user_company': user_company
             })
 
     except template.TemplateDoesNotExist:

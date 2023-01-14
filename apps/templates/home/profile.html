@@ -40,6 +40,75 @@
                         </div>
                       </div>
                     </div>
+
+                    <div class="row">
+                      <div class="col-md-6">
+                        <div class="form-group">
+                          <label class="bmd-label-floating">Company Name</label>
+                          <input type="text" id="comp_name" class="form-control" name="comp_name" value="{{ user_company.name }}" required>
+                        </div>
+                      </div>
+
+                      <div class="col-md-6">
+                        <div class="form-group">
+                          <label class="bmd-label-floating">Phone</label>
+                          <input type="number" id="phone" class="form-control" name="phone" value="{{ user_company.phone }}" required>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="row">
+                      <div class="col-md-12">
+                        <div class="form-group">
+                          <label class="bmd-label-floating">Street</label>
+                          <input type="text" id="street" class="form-control" name="street" value="{{ user_company.street }}" required>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="row">
+                      <div class="col-md-4">
+                        <div class="form-group">
+                          <label class="bmd-label-floating">City</label>
+                          <input type="text" id="city" class="form-control" name="city" value="{{ user_company.city }}" required>
+                        </div>
+                      </div>
+                      <div class="col-md-4">
+                        <div class="form-group">
+                          <!-- <label class="bmd-label-floating">Province</label> -->
+                          <select name="province" id="province" class="selectpicker" data-size="7" data-style="select-with-transition " title="Province">
+                            <!-- <option disabled selected>Province</option> -->
+                            <option value="ON" {%if user_company.province == 'ON' %} selected {%endif%}>Ontario</option>
+                            <option value="QC" {%if user_company.province == 'QC' %} selected {%endif%}>Quebec</option>
+                            <option value="NS" {%if user_company.province == 'NS' %} selected {%endif%}>Nova Scotia</option>
+                            <option value="NB" {%if user_company.province == 'NB' %} selected {%endif%}>New Brunswick</option>
+                            <option value="MB" {%if user_company.province == 'MB' %} selected {%endif%}>Manitoba</option>
+                            <option value="BC" {%if user_company.province == 'BC' %} selected {%endif%}>British Columbia</option>
+                            <option value="PE" {%if user_company.province == 'PE' %} selected {%endif%}>Prince Edward Island</option>
+                            <option value="SK" {%if user_company.province == 'SK' %} selected {%endif%}>Saskatchewan</option>
+                            <option value="AB" {%if user_company.province == 'AB' %} selected {%endif%}>Alberta</option>
+                            <option value="NL" {%if user_company.province == 'NL' %} selected {%endif%}>Newfoundland and Labrador</option>
+
+                          </select>
+                          <!-- <input type="text" id="province" class="form-control" name="province" value="{{ user_company.province }}" required> -->
+                        </div>
+                      </div>
+                      <div class="col-md-4">
+                        <div class="form-group">
+                          <label class="bmd-label-floating">Zip</label>
+                          <input type="text" id="zip" class="form-control" name="zip" value="{{ user_company.zip }}" required>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- <div class="row">
+                      <div class="col-md-12">
+                        <div class="form-group">
+                          <label class="bmd-label-floating">Phone</label>
+                          <input type="number" id="phone" class="form-control" name="phone" value="{{ current_user.email }}" required>
+                        </div>
+                      </div>
+                    </div> -->
                       
                     <button type="button" class="btn btn-primary pull-right"  onclick="update_profile_ajax()">Update Profile</button>
                     <div class="clearfix"></div>
@@ -95,6 +164,14 @@
     user_id = $('#user_id').val();
     username = $('#username').val();
     email = $('#email').val();
+    phone = $('#phone').val();
+    comp_name = $('#comp_name').val();
+    street = $('#street').val();
+    city = $('#city').val();
+    province = $('#province').val();
+    zip = $('#zip').val();
+
+    // console.log(province)
 
 
     $.ajax({
@@ -123,6 +200,12 @@
           data: {
             username: username,
             email: email,
+            comp_name: comp_name,
+            phone: phone,
+            street: street,
+            city: city,
+            province: province,
+            zip: zip,
             user_id: user_id
           },
           url: "{% url 'update_profile' %}"

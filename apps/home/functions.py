@@ -13,7 +13,7 @@ import pandas as pd
 from collections import namedtuple
 import csv
 from unidecode import unidecode
-from .models import DictionaryCategories, DictionarySubcategories, Document
+from .models import DictionaryCategories, DictionarySubcategories, Document, Company
 
 # from .views import get_category, get_all_sub_categories
 
@@ -710,10 +710,34 @@ def path_and_rename(ext):
 
 def update_profile(request):
     print(request.POST.get('user_id'))
-    user = User.objects.get(pk = request.POST.get('user_id'))
+    user_id = request.POST.get('user_id')
+    user = User.objects.get(pk = user_id)
     user.username = request.POST.get('username')
     user.email = request.POST.get('email')
     user.save()
+    # user.comp_name = request.POST.get('comp_name')
+    if Company.objects.filter(user_id = user_id).exists():
+        print('exists')
+        company = Company.objects.get(user_id = user_id)
+        company.name = request.POST.get('comp_name')
+        company.phone = request.POST.get('phone')
+        company.street = request.POST.get('street')
+        company.city = request.POST.get('city')
+        company.province = request.POST.get('province')
+        company.zip = request.POST.get('zip')
+        company.save()
+    else:
+        Company.objects.create(
+            user_id = request.POST.get('user_id'), 
+            name = request.POST.get('comp_name'),
+            phone = request.POST.get('phone'),
+            street = request.POST.get('street'),
+            city = request.POST.get('city'),
+            province = request.POST.get('province'),
+            zip = request.POST.get('zip')
+            )
+    # print(user.comp_name)
+    
 
     data = {'status': 200,
             'msg': 'update username/email success!'
