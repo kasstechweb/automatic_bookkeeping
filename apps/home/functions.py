@@ -577,6 +577,54 @@ def cibc_process_csv(file_name):
     df.to_csv(settings.MEDIA_ROOT + "/"+ filename + '.csv', index=False, header=None)
     return missing_category
 
+# scotia function to read csv file and add categories and check if missing category
+def scotia_process_csv(file_name):
+    missing_category = False
+    sub_categories = DictionarySubcategories.objects.all()
+    transactions = read_csv(settings.MEDIA_ROOT + "/" + str(file_name))
+    # del transactions[0]
+
+    csv_file = pd.read_csv(Path(settings.MEDIA_ROOT + '/' + str(file_name)))
+    line_items = []
+    balance = 0.0
+    for row in transactions:
+        # print(row[1])
+        date = row[0]
+        if row[2] == '-':
+            row[2] = ''
+        desc = row[2] + row[3] + row[4]
+        withdrawn = 0.00
+        deposited = 0.00
+        if float(row[1]) < 0:
+            withdrawn = float(row[1])*(-1)
+        else:
+            deposited = row[1]
+
+        # if withdrawn == '':
+        #     withdrawn = 0.0
+        # elif deposited == '':
+        #     deposited = 0.0
+
+        # print(withdrawn)
+        
+        balance = balance + float(withdrawn) + float(deposited)
+        balance = float("{:.2f}".format(balance))
+
+        category = get_category(desc, sub_categories)
+        if category == False:
+            missing_category = True
+        # csv_file.iat[index, 5] = category
+        if withdrawn == 0:
+            withdrawn = ''
+        if deposited == 0:
+            deposited = ''
+        line_items.append((date, desc, withdrawn, deposited, balance, category))
+    
+    df = pd.DataFrame(line_items)
+    filename = str(file_name).rsplit('.', 1)[0]
+    df.to_csv(settings.MEDIA_ROOT + "/"+ filename + '.csv', index=False, header=None)
+    return missing_category
+
 #function to read csv file
 def read_csv(file_path_name):
     file = open(file_path_name)
@@ -675,15 +723,6 @@ def edit_csv(request):
             'msg': 'edit success!'
             }
     return JsonResponse(data)
-
-# function to combine transactions in one file receive list and save it as csv file
-# def transactions_tocsv(transactions):
-    # print(transactions)
-    # df = pd.DataFrame(transactions)
-    
-    # print(df.head())
-    # filename = str(file_name).rsplit('.', 1)[0]
-    # df.to_csv(settings.MEDIA_ROOT + "/"+ filename + '.csv', index=False, header=None)
 
 def remove_digits(str):
     # str = str.split('*')[0]

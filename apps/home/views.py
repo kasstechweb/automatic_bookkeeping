@@ -182,6 +182,9 @@ def download_csv(request):
                     elif bank == 'cibc':
                         check_missing_category = functions.cibc_process_csv(file_name)
                         missing_category_list.append(check_missing_category)
+                    elif bank == 'scotia':
+                        check_missing_category = functions.scotia_process_csv(file_name)
+                        missing_category_list.append(check_missing_category)
             
             if True in missing_category_list: # there is a missing category ask user to add it before downloading csv
                 transactions = []
@@ -215,9 +218,9 @@ def download_csv(request):
                     file = Document.objects.get(pk=file_id)
                     file_path_name = file.docfile
                     os.remove(Path(settings.MEDIA_ROOT + str(file_path_name)))
-                    file_no_ext = str(file.docfile).rsplit('.', 1)[0]
-                    file_name_csv = file_no_ext + '.csv'
-                    os.remove(Path(settings.MEDIA_ROOT + str(file_name_csv)))
+                    # file_no_ext = str(file.docfile).rsplit('.', 1)[0]
+                    # file_name_csv = file_no_ext + '.csv'
+                    # os.remove(Path(settings.MEDIA_ROOT + str(file_name_csv)))
                     Document.objects.filter(pk=file_id).delete()
 
                 return render(request, 'home/missing_categories.html', 
@@ -258,9 +261,9 @@ def download_csv(request):
                     file = Document.objects.get(pk=file_id)
                     file_path_name = file.docfile
                     os.remove(Path(settings.MEDIA_ROOT + str(file_path_name)))
-                    file_no_ext = str(file.docfile).rsplit('.', 1)[0]
-                    file_name_csv = file_no_ext + '.csv'
-                    os.remove(Path(settings.MEDIA_ROOT + str(file_name_csv)))
+                    # file_no_ext = str(file.docfile).rsplit('.', 1)[0]
+                    # file_name_csv = file_no_ext + '.csv'
+                    # os.remove(Path(settings.MEDIA_ROOT + str(file_name_csv)))
                     Document.objects.filter(pk=file_id).delete()
 
                 return render(request, 'home/download_csv.html', 
