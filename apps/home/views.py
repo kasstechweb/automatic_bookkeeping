@@ -218,9 +218,9 @@ def download_csv(request):
                     file = Document.objects.get(pk=file_id)
                     file_path_name = file.docfile
                     os.remove(Path(settings.MEDIA_ROOT + str(file_path_name)))
-                    # file_no_ext = str(file.docfile).rsplit('.', 1)[0]
-                    # file_name_csv = file_no_ext + '.csv'
-                    # os.remove(Path(settings.MEDIA_ROOT + str(file_name_csv)))
+                    file_no_ext = str(file.docfile).rsplit('.', 1)[0]
+                    file_name_csv = file_no_ext + '.csv'
+                    os.remove(Path(settings.MEDIA_ROOT + str(file_name_csv)))
                     Document.objects.filter(pk=file_id).delete()
 
                 return render(request, 'home/missing_categories.html', 
@@ -261,9 +261,9 @@ def download_csv(request):
                     file = Document.objects.get(pk=file_id)
                     file_path_name = file.docfile
                     os.remove(Path(settings.MEDIA_ROOT + str(file_path_name)))
-                    # file_no_ext = str(file.docfile).rsplit('.', 1)[0]
-                    # file_name_csv = file_no_ext + '.csv'
-                    # os.remove(Path(settings.MEDIA_ROOT + str(file_name_csv)))
+                    file_no_ext = str(file.docfile).rsplit('.', 1)[0]
+                    file_name_csv = file_no_ext + '.csv'
+                    os.remove(Path(settings.MEDIA_ROOT + str(file_name_csv)))
                     Document.objects.filter(pk=file_id).delete()
 
                 return render(request, 'home/download_csv.html', 
@@ -353,6 +353,7 @@ def categories_summary(request):
         summary = []
 
         current_user = request.user
+        print(current_user.id)
         company_details = Company.objects.get(user_id = current_user.id)
         # for tr in transactions:
         #     print(tr)
