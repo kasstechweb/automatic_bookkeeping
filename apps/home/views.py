@@ -297,12 +297,14 @@ def categories(request):
         bank = request.POST.get('bank')
 
         file_name = str(filename).rsplit('\\', 1)[1]
+        file_download = '/media/statements/' + file_name
         return render(request, 'home/categories.html', 
                 {
                 'categories': categories,
                 'transactions': transactions,
                 # 'zipped_data': zipped_data,
                 'file_name': file_name,
+                'file_download': file_download,
                 'bank': bank
                 })
     # using try to get the view template
