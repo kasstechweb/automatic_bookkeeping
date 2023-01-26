@@ -15,6 +15,8 @@ import csv
 from unidecode import unidecode
 from .models import DictionaryCategories, DictionarySubcategories, Document, Company
 
+from datetime import datetime
+
 # from .views import get_category, get_all_sub_categories
 
 # from apps.home.models import DictionaryCategories
@@ -819,5 +821,33 @@ def delete_statement(request):
 
     data = {'status': 200,
             'msg': 'change password success!'
+            }
+    return JsonResponse(data)
+
+def add_transaction(request):
+    print(request.POST.get('file_name'))
+    print("add category requested")
+    file_name = request.POST.get('file_name')
+    date = request.POST.get('date')
+    new_date = datetime.strptime(date, '%Y-%m-%d')
+    day = new_date.strftime("%d")
+    month = new_date.strftime("%b")
+    final_date = day + '-' + month
+    print(day + '-' + month)
+    transaction = request.POST.get('transaction')
+    category = request.POST.get('category')
+    withdrawn = request.POST.get('withdrawn')
+    deposited = request.POST.get('deposited')
+    balance = request.POST.get('balance')
+    data = [
+        [final_date, transaction, withdrawn, deposited, balance, category]
+    ]
+    dataframe = pd.DataFrame(data)
+    dataframe.to_csv(settings.MEDIA_ROOT + '/statements/' + file_name, mode='a', index=False, header=None)
+
+    # csv_file = pd.read_csv(Path(settings.MEDIA_ROOT + '/statements/' +request.POST.get('file_name')), header=None)
+
+    data = {'status': 200,
+            'msg': 'add success!'
             }
     return JsonResponse(data)

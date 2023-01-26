@@ -44,7 +44,9 @@ urlpatterns = [
 
     path('update_profile/', functions.update_profile, name='update_profile'),
     path('update_password/', functions.update_password, name='update_password'),
-    path('delete_statement/', functions.delete_statement, name='delete_statement')
+    path('delete_statement/', functions.delete_statement, name='delete_statement'),
+
+    path('add_transaction/', functions.add_transaction, name='add_transaction')
 
     # path('upload_statement/', views.upload_statement, name='upload_statement'),
 ]
