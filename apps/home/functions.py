@@ -16,6 +16,7 @@ from unidecode import unidecode
 from .models import DictionaryCategories, DictionarySubcategories, Document, Company
 
 from datetime import datetime
+import json
 
 # from .views import get_category, get_all_sub_categories
 
@@ -846,6 +847,127 @@ def add_transaction(request):
     dataframe.to_csv(settings.MEDIA_ROOT + '/statements/' + file_name, mode='a', index=False, header=None)
 
     # csv_file = pd.read_csv(Path(settings.MEDIA_ROOT + '/statements/' +request.POST.get('file_name')), header=None)
+
+    data = {'status': 200,
+            'msg': 'add success!'
+            }
+    return JsonResponse(data)
+
+def categories_percent_read(file_name):
+    print('categories_percentage called')
+    file_name = Path(settings.MEDIA_ROOT + '/statements/' + file_name +  str('_percent.txt'))
+    # mode = 'a' if os.path.exists(file_name) else 'w'
+    with open(file_name, 'r') as f: 
+        file_contents = f.read()
+        # print(s)
+    print(file_contents)
+
+def categories_percent_write(file_name, category, percent):
+    print('categories_percentage write called')
+    category -= 1
+    file_name = Path(settings.MEDIA_ROOT + '/statements/' + file_name +  str('_percent.txt'))
+    if not os.path.exists(file_name):
+        with open(file_name, 'w') as file:
+            file.write('')
+    # mode = 'a' if os.path.exists(file_name) else 'w'
+    with open(file_name, 'r') as file:
+    # read a list of lines into data
+        data = file.readlines()
+
+    # print(data)
+    # print(category)
+    # print("len data: " + str(len(data)))
+    # print("data category: " + str(category) + data[category])
+    if len(data) < category+1:
+        data.append(str(percent) + '\n')
+    else:
+        data[category] = str(percent) + '\n'
+
+    with open(file_name, 'w') as file:
+        file.writelines(data)
+
+def update_category_summary_percentage(request):
+    print('update_category_summary_percentage called')
+    category = int(request.POST.get('category'))
+    new_filename = request.POST.get('new_filename')
+    percentage = request.POST.get('percentage')
+
+    categories_percent_write(new_filename, category, percentage)
+    data = {'status': 200,
+        'msg': 'percentage updated!'
+        }
+    return JsonResponse(data)
+
+def generate_gfi(request):
+    # for x in summary:
+    #     print(x)
+    current_user = request.user
+    print(current_user.id)
+    company_details = Company.objects.get(user_id = current_user.id)
+
+    line = '"GIFI01","","","","","Intuit Inc.","","","","","QuickBooks Online","","",'
+    line += '"' + str(company_details.phone) + '",'
+    line += '"' + str(company_details.name) + '",'
+    line += '"' + str(company_details.street) + '",'
+    line += '"' + str(company_details.city) + '",'
+    line += '"' + str(company_details.province) + '",'
+    line += '"' + str(company_details.zip) + '",'
+    line += '"","","",""'
+    line += '\n'
+
+    # new_filename = str(file_name).rsplit('.', 1)[0]
+    new_filename = request.POST.get('new_filename')
+    # summary = request.POST.get('summary')
+
+    transactions = read_csv(Path(settings.MEDIA_ROOT + '/statements/' + new_filename + '.csv') )
+    categories = DictionaryCategories.objects.all()
+    summary = []
+    for cat in categories:
+        duplicates = []
+        for index,tr in enumerate(transactions):
+            # print(tr)
+            if cat.name == tr[5]:
+                duplicates.append(index)
+        
+        withdrawn = 0.00
+        deposited = 0.00
+        for dup in duplicates:
+            # print(transactions[dup][2])
+            if transactions[dup][2] != '':
+                amount = clean_amount(transactions[dup][2])
+                withdrawn += float(amount)
+            if transactions[dup][3] != '':
+                amount = clean_amount(transactions[dup][3])
+                deposited += float(amount)
+        # print('>> ' + str(num1) + ' ' + str(num2))
+        
+        # # format floats to 2 decimals
+        # withdrawn = format(withdrawn, '.2f')
+        # deposited = format(deposited, '.2f')
+        # print(withdrawn)
+        # if cat.name in transactions:
+        if withdrawn != 0.00 or deposited != 0.00:
+            summary.append([cat.name, format(withdrawn, '.2f'), format(deposited, '.2f')])
+    # print(new_filename)
+    print(summary) 
+    print(type(summary)) 
+    with open(settings.MEDIA_ROOT + '/statements/' + new_filename + ".gfi", "w") as f:
+        for row in summary:
+            print(row[0])
+            category = row[0]
+            categories = DictionaryCategories.objects.get(name = category)
+            code = categories.code
+
+            if code != 0:
+                withdrawn = row[1]
+                deposited = row[2]
+                line += '"' + str(code) + '",'
+                if withdrawn != 0.00:
+                    line += withdrawn + '\n'
+                elif deposited != 0.00:
+                    line += deposited + '\n'
+                f.write(line)
+            line = ''
 
     data = {'status': 200,
             'msg': 'add success!'

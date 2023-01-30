@@ -359,12 +359,12 @@ mk = {
           labels.push(i+1);
           withdrawn.push(summary[i][1]);
           deposited.push(summary[i][2]);
-          console.log(summary[i]);
+          // console.log(summary[i]);
           // console.log(summary[i] + "<br>") ;
         }
         all_amount = withdrawn.concat(deposited)
-        console.log(all_amount)
-        console.log(Math.max(...all_amount))
+        // console.log(all_amount)
+        // console.log(Math.max(...all_amount))
         // console.log(Math.max(...deposited))
         // labels.push('test')
         // console.log(labels)

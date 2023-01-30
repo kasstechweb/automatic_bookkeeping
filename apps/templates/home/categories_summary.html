@@ -37,6 +37,7 @@
                     <th>Category</th>
                     <th>withdrawn</th>
                     <th>deposited</th>
+                    <th>percentage</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -46,6 +47,7 @@
                         <td>{{ x.0 }}</td>
                         <td>{{ x.1 }}</td>
                         <td>{{ x.2 }}</td>
+                        <td><input value="{{x.3}}" id="percentage_{{forloop.counter}}" onchange="change_percentage('{{forloop.counter}}')" class="w-75" type="number" value="100" data-id="{{forloop.counter}}"> %</td>
                     </tr>
                   {% endfor %}
                 </tbody>
@@ -75,13 +77,19 @@
         <p class="card-category">You can edit company details in user profile</p>
 
         <!-- <p class="card-category">{{ company_details.street}} - {{ company_details.city}} - {{ company_details.province}} - {{ company_details.zip}}</p> -->
-        <a href="{{ gfi_file}}" target="_self" class="btn btn-success">
+        <!-- <a href="{{ gfi_file}}" target="_self" class="btn btn-success"> -->
+          <a href="#" target="_self" class="btn btn-primary" onclick="generate_gfi()">
+              Generate gfi file
+            <div class="ripple-container"></div>
+          </a>
+          <a id="download_gfi" href="{{ gfi_file }}" target="_self" class="btn btn-success d-none">
             <span class="btn-label">
               <i class="material-icons">download</i>
             </span>
-            Download gfi file
-          <div class="ripple-container"></div>
+              Download gfi file
+            <div class="ripple-container"></div>
           </a>
+          <div id="loader" class="ml-auto mr-auto loader d-none"></div>
       </div>
     </div>
   </div>
@@ -354,12 +362,110 @@
 </script>
 
 <script>
+  function generate_gfi(){
+    $('#loader').removeClass('d-none');
+
+  $.ajax({
+        type: 'POST',
+        beforeSend: function(xhr, settings) {
+            function getCookie(name) {
+                var cookieValue = null;
+                if (document.cookie && document.cookie != '') {
+                    var cookies = document.cookie.split(';');
+                    for (var i = 0; i < cookies.length; i++) {
+                        var cookie = jQuery.trim(cookies[i]);
+                        // Does this cookie string begin with the name we want?
+                        if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+            if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+                // Only send the token to relative URLs i.e. locally.
+                xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+            }
+        },
+        data: {
+          new_filename: "{{ new_filename }}",
+          summary: "{{ summary | safe }}"
+          // file_name: "{{ file_name }}"
+        },
+        url: "{% url 'generate_gfi' %}"
+    }).done(function(data) {
+      $('#loader').addClass('d-none');
+      $('#download_gfi').removeClass('d-none');
+    }).fail(function(data) {
+        console.log('errors happened: ' + data);
+    });
+}
+</script>
+
+<script>
   $(document).ready(function() {
     // Javascript method's body can be found in assets/js/demos.js
     mk.initDashboardPageCharts('{{ summary }}');
 
     // md.initVectorMap();
 
+    $("#percentage").change(function(){
+      console.log("The text has been changed.");
+      console.log($(this).data("id"))
+
+      
+    });
+
+
   });
+
+
+
+  function change_percentage(id){
+    console.log("{{ new_filename }}")
+    // console.log("{{ media_root }}");
+    console.log(id)
+    console.log($('#percentage_'+id).val());
+
+    $.ajax({
+        type: 'POST',
+        beforeSend: function(xhr, settings) {
+            function getCookie(name) {
+                var cookieValue = null;
+                if (document.cookie && document.cookie != '') {
+                    var cookies = document.cookie.split(';');
+                    for (var i = 0; i < cookies.length; i++) {
+                        var cookie = jQuery.trim(cookies[i]);
+                        // Does this cookie string begin with the name we want?
+                        if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+            if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+                // Only send the token to relative URLs i.e. locally.
+                xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+            }
+        },
+        data: {
+          category: id,
+          percentage: $('#percentage_'+id).val(),
+          new_filename: "{{ new_filename }}"
+          // file_name: "{{ file_name }}"
+        },
+        url: "{% url 'update_category_summary_percentage' %}"
+      }).done(function(data) {
+        // $('#loader').addClass('d-none');
+        // $('#download_gfi').removeClass('d-none');
+        // mk.showNotification('top','right', 'success', data.msg);
+        console.log('doneeeeeeeeeee')
+      }).fail(function(data) {
+          console.log('errors happened: ' + data);
+      });
+  }
 </script>
 {% endblock javascripts %}

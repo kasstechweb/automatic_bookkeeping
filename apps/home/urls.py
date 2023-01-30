@@ -46,7 +46,9 @@ urlpatterns = [
     path('update_password/', functions.update_password, name='update_password'),
     path('delete_statement/', functions.delete_statement, name='delete_statement'),
 
-    path('add_transaction/', functions.add_transaction, name='add_transaction')
+    path('add_transaction/', functions.add_transaction, name='add_transaction'),
+    path('generate_gfi/', functions.generate_gfi, name='generate_gfi'),
+    path('update_category_summary_percentage/', functions.update_category_summary_percentage, name='update_category_summary_percentage')
 
     # path('upload_statement/', views.upload_statement, name='upload_statement'),
 ]

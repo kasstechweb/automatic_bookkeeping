@@ -369,6 +369,7 @@ def categories_summary(request):
             
             withdrawn = 0.00
             deposited = 0.00
+            # itterate and gather withdrawn and deposited for each category
             for dup in duplicates:
                 # print(transactions[dup][2])
                 if transactions[dup][2] != '':
@@ -377,53 +378,42 @@ def categories_summary(request):
                 if transactions[dup][3] != '':
                     amount = functions.clean_amount(transactions[dup][3])
                     deposited += float(amount)
-            # print('>> ' + str(num1) + ' ' + str(num2))
-            
-            # # format floats to 2 decimals
-            # withdrawn = format(withdrawn, '.2f')
-            # deposited = format(deposited, '.2f')
-            # print(withdrawn)
-            # if cat.name in transactions:
+            # add category name and total amount to summary 
             if withdrawn != 0.00 or deposited != 0.00:
                 summary.append([cat.name, format(withdrawn, '.2f'), format(deposited, '.2f')])
-
-        for x in summary:
-            print(x)
-        line = '"GIFI01","","","","","Intuit Inc.","","","","","QuickBooks Online","","",'
-        line += '"' + str(company_details.phone) + '",'
-        line += '"' + str(company_details.name) + '",'
-        line += '"' + str(company_details.street) + '",'
-        line += '"' + str(company_details.city) + '",'
-        line += '"' + str(company_details.province) + '",'
-        line += '"' + str(company_details.zip) + '",'
-        line += '"","","",""'
-        line += '\n'
-
+        
         new_filename = str(file_name).rsplit('.', 1)[0]
-        print(new_filename)
-        with open(settings.MEDIA_ROOT + '/statements/' + new_filename + ".gfi", "w") as f:
-            for row in summary:
-                category = row[0]
-                categories = DictionaryCategories.objects.get(name = category)
-                code = categories.code
 
-                if code != 0:
-                    withdrawn = row[1]
-                    deposited = row[2]
-                    line += '"' + str(code) + '",'
-                    if withdrawn != 0.00:
-                        line += withdrawn + '\n'
-                    elif deposited != 0.00:
-                        line += deposited + '\n'
-                    f.write(line)
-                line = ''
+        # percentage file logic
+        percentage_file = Path(settings.MEDIA_ROOT + '/statements/' + new_filename +  str('_percent.txt'))
+        if not os.path.exists(percentage_file):
+            for index, x in enumerate(summary):
+                # print(index+1)
+                functions.categories_percent_write(new_filename, index+1, 100)
+            # print(x)
+        else:
+            with open(percentage_file, 'r') as file:
+                # read a list of lines into data
+                data = file.readlines()
+            data = list(map(lambda x:x.strip(),data))
+            # print(data)
+            for index, row in enumerate(data):
+                # print(row)
+                summary[index].append(row)
+
+        # for x in summary:
+        #     print(x)
 
         gfi_file = '/media/statements/' + new_filename + ".gfi"
+        # functions.categories_percent_read(new_filename)
+        # functions.categories_percent_write(new_filename, 2, 57)
+        # functions.categories_percent_write(new_filename, 5, 57)
         return render(request, 'home/categories_summary.html',
                                 {
                                     'summary': summary,
                                     'company_details': company_details,
-                                    'gfi_file': gfi_file
+                                    'gfi_file': gfi_file,
+                                    'new_filename': new_filename,
                                 })
 
     # try:
