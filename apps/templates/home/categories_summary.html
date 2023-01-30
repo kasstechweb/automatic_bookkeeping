@@ -423,10 +423,10 @@
 
 
   function change_percentage(id){
-    console.log("{{ new_filename }}")
+    // console.log("{{ new_filename }}")
     // console.log("{{ media_root }}");
-    console.log(id)
-    console.log($('#percentage_'+id).val());
+    // console.log(id)
+    // console.log($('#percentage_'+id).val());
 
     $.ajax({
         type: 'POST',
@@ -462,7 +462,7 @@
         // $('#loader').addClass('d-none');
         // $('#download_gfi').removeClass('d-none');
         // mk.showNotification('top','right', 'success', data.msg);
-        console.log('doneeeeeeeeeee')
+        // console.log('doneeeeeeeeeee')
       }).fail(function(data) {
           console.log('errors happened: ' + data);
       });

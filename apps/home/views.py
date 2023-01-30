@@ -390,6 +390,7 @@ def categories_summary(request):
             for index, x in enumerate(summary):
                 # print(index+1)
                 functions.categories_percent_write(new_filename, index+1, 100)
+                summary[index].append('100')
             # print(x)
         else:
             with open(percentage_file, 'r') as file:
@@ -400,7 +401,17 @@ def categories_summary(request):
             for index, row in enumerate(data):
                 # print(row)
                 summary[index].append(row)
-
+        
+        # check if new category adde, if delete percentage file
+        with open(percentage_file, 'r') as file:
+            percentage_data = file.readlines()
+        if len(summary) != len(percentage_data):
+            os.remove(percentage_file)
+            for index, x in enumerate(summary):
+                functions.categories_percent_write(new_filename, index+1, 100)
+                summary[index].append('100')
+        print('len summary' + str(len(summary)))
+        print('len percentage_data' + str(len(percentage_data)))
         # for x in summary:
         #     print(x)
 

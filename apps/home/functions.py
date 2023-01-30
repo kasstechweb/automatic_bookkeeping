@@ -948,24 +948,48 @@ def generate_gfi(request):
         # if cat.name in transactions:
         if withdrawn != 0.00 or deposited != 0.00:
             summary.append([cat.name, format(withdrawn, '.2f'), format(deposited, '.2f')])
+
+    percentage_file = Path(settings.MEDIA_ROOT + '/statements/' + new_filename +  str('_percent.txt'))
+    if not os.path.exists(percentage_file):
+        for index, x in enumerate(summary):
+            # print(index+1)
+            categories_percent_write(new_filename, index+1, 100)
+        # print(x)
+    else:
+        with open(percentage_file, 'r') as file:
+            # read a list of lines into data
+            data = file.readlines()
+        data = list(map(lambda x:x.strip(),data))
+        # print(data)
+        for index, row in enumerate(data):
+            # print(row)
+            summary[index].append(row)
     # print(new_filename)
-    print(summary) 
-    print(type(summary)) 
+    # print(summary) 
+    # print(type(summary)) 
     with open(settings.MEDIA_ROOT + '/statements/' + new_filename + ".gfi", "w") as f:
         for row in summary:
-            print(row[0])
+            print(row)
             category = row[0]
             categories = DictionaryCategories.objects.get(name = category)
             code = categories.code
+            percentage = float(row[3]) / 100.00
 
             if code != 0:
                 withdrawn = row[1]
                 deposited = row[2]
                 line += '"' + str(code) + '",'
-                if withdrawn != 0.00:
-                    line += withdrawn + '\n'
-                elif deposited != 0.00:
-                    line += deposited + '\n'
+                if withdrawn != '0.00':
+                    print(withdrawn)
+                    print(type(withdrawn))
+                    print(percentage)
+                    print(type(percentage))
+                    amount = float(withdrawn) * percentage
+                    line += str('%#.2f' % amount) + '\n'
+                if deposited != '0.00':
+                    print(deposited)
+                    amount = float(deposited) * percentage
+                    line += str('%#.2f' % amount) + '\n'
                 f.write(line)
             line = ''
 
