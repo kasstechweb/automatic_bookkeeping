@@ -17,6 +17,7 @@ from apps.home import functions, path_rename
 import ast
 import pandas as pd
 import os
+from uuid import uuid4
 # td_pdftocsv, rbc_pdftocsv, atb_pdftocsv, servus_pdftocsv, scotia_pdftocsv, read_csv, td_process_csv
 
 
@@ -480,6 +481,61 @@ def profile(request):
 
     except template.TemplateDoesNotExist:
 
+        html_template = loader.get_template('home/page-404.html')
+        return HttpResponse(html_template.render(context, request))
+
+    except:
+        html_template = loader.get_template('home/page-500.html')
+        return HttpResponse(html_template.render(context, request))
+
+# download csv page and go to categories page
+@login_required(login_url="/login/")
+def manual_categories(request):
+    context = {}
+    if request.method == "POST":
+        print('request post')
+        file_name = request.POST.get('file_name')
+        
+    #     # file = Document.objects.get(pk=file_id)
+    #     # filename = Path(settings.MEDIA_ROOT + str(file.docfile))
+    #     # transactions = functions.read_csv(filename)
+        categories = DictionaryCategories.objects.all()
+    #     # bank = request.POST.get('bank')
+
+    #     # file_name = str(filename).rsplit('\\', 1)[1]
+        file_download = '/media/statements/' + file_name
+        file_path = Path(settings.MEDIA_ROOT + '/statements/' + file_name)
+        transactions = functions.read_csv(file_path)
+        return render(request, 'home/manual_categories.html', 
+                {
+                    'segment': 'manual_categories',
+                    'categories': categories,
+                    'transactions': transactions,
+    #             # 'transactions': transactions,
+    #             # # 'zipped_data': zipped_data,
+                    'file_name': file_name,
+                    'file_download': file_download,
+    #             # 'bank': bank
+                })
+    # using try to get the view template
+    try:
+        fila_name = '{}.{}'.format(uuid4().hex, 'csv')
+        file = Path(settings.MEDIA_ROOT + '/statements/' + fila_name)
+        with open(file, 'w') as file:
+            file.writelines('')
+        newdoc = Document(docfile = ('statements'+ "\\" + fila_name))
+        newdoc.submitter = request.user
+        newdoc.save()
+        print(newdoc.pk)
+        categories = DictionaryCategories.objects.all()
+        return render(request, 'home/manual_categories.html', 
+                    {
+                        'file_name': fila_name,
+                        'categories': categories,
+                        'segment': 'manual_categories'
+                    })
+
+    except template.TemplateDoesNotExist:
         html_template = loader.get_template('home/page-404.html')
         return HttpResponse(html_template.render(context, request))
 
