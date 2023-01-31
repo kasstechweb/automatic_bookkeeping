@@ -13,7 +13,7 @@ import pandas as pd
 from collections import namedtuple
 import csv
 from unidecode import unidecode
-from .models import DictionaryCategories, DictionarySubcategories, Document, Company
+from .models import DictionaryCategories, DictionarySubcategories, Document, Company, DictionarySubcategoriesNotApproved
 
 from datetime import datetime
 import json
@@ -699,9 +699,9 @@ def edit_csv_and_dictionary(request):
 
     # add to dictionary db
     category = DictionaryCategories.objects.get(name=request.POST.get('category'))
-    check_sub_category = DictionarySubcategories.objects.filter(name= remove_digits(transaction)).exists()
+    check_sub_category = DictionarySubcategoriesNotApproved.objects.filter(name= remove_digits(transaction)).exists()
     if not check_sub_category: # not found duplicate
-        sub_category = DictionarySubcategories.objects.create(name= remove_digits(transaction), dictionary_category_id = category.pk)
+        sub_category = DictionarySubcategoriesNotApproved.objects.create(name= remove_digits(transaction), dictionary_category_id = category.pk, approved=0)
         sub_category.save()
 
     data = {'status': 200,

@@ -38,7 +38,14 @@ class DictionarySubcategories(models.Model):
         db_table = 'dictionary_subcategories'
         ordering = ['id']
 
+class DictionarySubcategoriesNotApproved(models.Model):
+    name = models.CharField(max_length=255)
+    dictionary_category = models.ForeignKey(DictionaryCategories, models.DO_NOTHING)
+    approved = models.IntegerField()
 
+    class Meta:
+        managed = False
+        db_table = 'dictionary_subcategories_not_approved'
 class Company(models.Model):
     name = models.CharField(max_length=255, blank=True, null=True)
     phone = models.IntegerField(blank=True, null=True)
