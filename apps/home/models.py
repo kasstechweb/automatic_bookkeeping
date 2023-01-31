@@ -47,6 +47,7 @@ class Company(models.Model):
     province = models.CharField(max_length=255, blank=True, null=True)
     zip = models.CharField(max_length=255, blank=True, null=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, models.DO_NOTHING)
+    yearend = models.CharField(max_length=255, blank=True, null=True)
 
     class Meta:
         managed = False
