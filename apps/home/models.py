@@ -38,10 +38,11 @@ class DictionarySubcategories(models.Model):
         db_table = 'dictionary_subcategories'
         ordering = ['id']
 
+BOOL_CHOICES = ((True, 'Yes'), (False, 'No'))
 class DictionarySubcategoriesNotApproved(models.Model):
     name = models.CharField(max_length=255)
     dictionary_category = models.ForeignKey(DictionaryCategories, models.DO_NOTHING)
-    approved = models.IntegerField()
+    approved = models.BooleanField(choices=BOOL_CHOICES)
 
     class Meta:
         managed = False

@@ -999,3 +999,13 @@ def generate_gfi(request):
             'msg': 'add success!'
             }
     return JsonResponse(data)
+
+def update_subcategories(obj):
+    # print(subcategory_approved.name)
+    subcategory_approved = DictionarySubcategoriesNotApproved.objects.get(pk = obj.id)
+    check_sub_category = DictionarySubcategoriesNotApproved.objects.filter(name= remove_digits(subcategory_approved.name)).exists()
+    if not check_sub_category: # not found duplicate
+        sub_category = DictionarySubcategories.objects.create(name= remove_digits(subcategory_approved.name), dictionary_category_id = subcategory_approved.dictionary_category_id)
+        sub_category.save()
+    print(subcategory_approved.name)
+    print('update_subcategories called')
