@@ -817,11 +817,18 @@ def delete_statement(request):
     gfi_file = str(file_path_name).rsplit('\\', 1)[1]
     gfi_file = str(gfi_file).rsplit('.', 1)[0] + '.gfi'
     percentage_file = str(gfi_file).rsplit('.', 1)[0] + '_percent.txt'
+    csv_path = Path(settings.MEDIA_ROOT + str(file_path_name))
+    gfi_path = Path(settings.MEDIA_ROOT + '/statements/' + str(gfi_file))
+    percent_path = Path(settings.MEDIA_ROOT + '/statements/' + str(percentage_file))
     print(gfi_file)
-    os.remove(Path(settings.MEDIA_ROOT + str(file_path_name)))
-    os.remove(Path(settings.MEDIA_ROOT + '/statements/' + str(gfi_file)))
-    os.remove(Path(settings.MEDIA_ROOT + '/statements/' + str(percentage_file)))
-    Document.objects.filter(pk=file_id).delete()
+    if csv_path.exists():
+        os.remove(csv_path)
+    if gfi_path.exists():
+        os.remove(gfi_path)
+    if percent_path.exists():
+        os.remove(percent_path)
+    # Document.objects.filter(pk=file_id).delete()
+    document.delete()
 
     data = {'status': 200,
             'msg': 'change password success!'

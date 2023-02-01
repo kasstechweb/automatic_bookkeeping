@@ -484,9 +484,14 @@
           },
           url: "{% url 'add_transaction' %}"
       }).done(function(data) {
-        console.log('done success')
+        // console.log('done success')
+        mk.showNotification('top','right', 'success', data.msg);
         $('#addingModal').modal('toggle');
-        location.reload();
+        setTimeout(()=> {
+          location.reload();
+        }
+      ,1000);
+        
       }).fail(function(data) {
           console.log('errors happened: ' + data);
       });
