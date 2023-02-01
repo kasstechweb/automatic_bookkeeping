@@ -767,6 +767,7 @@ def update_profile(request):
         company.city = request.POST.get('city')
         company.province = request.POST.get('province')
         company.zip = request.POST.get('zip')
+        company.yearend = request.POST.get('yearend')
         company.save()
     else:
         Company.objects.create(

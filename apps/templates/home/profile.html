@@ -195,6 +195,7 @@
     city = $('#city').val();
     province = $('#province').val();
     zip = $('#zip').val();
+    yearend = $('#yearend').val();
 
     // console.log(province)
 
@@ -231,6 +232,7 @@
             city: city,
             province: province,
             zip: zip,
+            yearend: yearend,
             user_id: user_id
           },
           url: "{% url 'update_profile' %}"
