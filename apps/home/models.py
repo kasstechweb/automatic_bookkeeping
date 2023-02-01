@@ -47,6 +47,9 @@ class DictionarySubcategoriesNotApproved(models.Model):
     class Meta:
         managed = False
         db_table = 'dictionary_subcategories_not_approved'
+        # verbose_name = 'My image'
+        verbose_name_plural = 'Dictionary subcategoriess not approved'
+
 class Company(models.Model):
     name = models.CharField(max_length=255, blank=True, null=True)
     phone = models.IntegerField(blank=True, null=True)
