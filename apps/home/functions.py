@@ -128,6 +128,7 @@ def td_pdftocsv(request, file_name):
 
 # function to convert rbc bank pdf to csv file
 def rbc_pdftocsv(request, file_name):
+    print('rbc_pdftocsv')
     missing_category = False
     Inv = namedtuple('Inv', 'ext_date date description amount category balance')
     text = '' # new line
@@ -136,14 +137,14 @@ def rbc_pdftocsv(request, file_name):
             single_page_text = pdf_page.extract_text(x_tolerance=1, y_tolerance=0, layout=False)
             text = text + '\n' + single_page_text
 
-    inv_line_re = re.compile(r'(\d{1,2}\s(Jan?|Feb?|Mar?|Apr?|May|Jun?|Jul?|Aug?|Sep?|Oct?|Nov?|Dec?))?\s?([a-zA-Z].+)(\s\d{1,3}(?:,?\d{3})*\.\d{2})(\s\d{1,3}(?:,?\d{3})*\.\d{2})'
-                                '|(\d{1,2}\s(Jan?|Feb?|Mar?|Apr?|May|Jun?|Jul?|Aug?|Sep?|Oct?|Nov?|Dec?))?\s?([a-zA-Z].+)(\s\d{1,3}(?:,?\d{3})*\.\d{2})'
-                                '|(\d{1,2}\s(Jan?|Feb?|Mar?|Apr?|May|Jun?|Jul?|Aug?|Sep?|Oct?|Nov?|Dec?))?\s?([a-zA-Z].+)\n(([\*|\-|\_|A-Z|a-z|0-9]\n)+)([a-zA-Z].+)(\s\d{1,3}(?:,?\d{3})*\.\d{2})(\s\d{1,3}(?:,?\d{3})*\.\d{2})'
+    inv_line_re = re.compile(r'(\d{1,2}\s(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec))?\s?([a-zA-Z].+)(\s\d{1,3}(?:,?\d{3})*\.\d{2})(\s\d{1,3}(?:,?\d{3})*\.\d{2})'
+                                '|(\d{1,2}\s(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec))?\s?([a-zA-Z].+)(\s\d{1,3}(?:,?\d{3})*\.\d{2})'
+                                '|(\d{1,2}\s(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec))?\s?([a-zA-Z].+)\n(([\*|\-|\_|A-Z|a-z|0-9]\n)+)([a-zA-Z].+)(\s\d{1,3}(?:,?\d{3})*\.\d{2})(\s\d{1,3}(?:,?\d{3})*\.\d{2})'
                         )
-    ignore_list = ['Opening Balance', 'Total withdrawals from your account -', 'Total withdrawals from your account +', 'Total deposits into your account +', 'Total deposits into your account -', 'Balance']
+    ignore_list = ['Opening Balance', 'Opening balance', 'Closing balance', 'Closing Balance', 'Total withdrawals', 'Total deposits', 'Total cheques', 'Balance']
 
     # get opening balance
-    opening_line_re = re.compile(r'(\bOpening Balance\b)\s(.?\d{1,3}(?:,?\d{3})*\.\d{2}.*?)')
+    opening_line_re = re.compile(r'(\bOpening Balance\b|\bOpening balance\b)\s(.?\d{1,3}(?:,?\d{3})*\.\d{2}.*?)')
     opening_line = opening_line_re.findall(text)
     opening_balance =  opening_line[0][1]
     opening_balance = opening_balance.replace(',', '')
@@ -158,125 +159,141 @@ def rbc_pdftocsv(request, file_name):
         sub_categories = DictionarySubcategories.objects.all()
 
         for x in line:
-            if x[0] != '':
-                # print(x[0]+ ' ========= ' + x[2] + ' ========= ' + x[3] + ' ========= ' + x[4])
-                date = x[0]
-                desc = x[2] 
-                amount = x[3]
-                balance = x[4]
-                
-                if balance > previous_balance: #deposit
-                    deposited = amount
-                    withdrawn = ''
-                else:
-                    deposited = ''
-                    withdrawn = amount
-                previous_balance = balance
-                
-                category = get_category(desc, sub_categories)
-                if category == False:
-                    missing_category = True
-                line_items.append((date, desc, withdrawn, deposited, balance, category))
+            found = False
+            for item in ignore_list:
+                if x[7].find(item) != -1:
+                    # desc = unidecode(x[8])
+                    # print('found')
+                    found = True
+                    break
+            if not found:
+                if x[0] != '':
+                    print(x[0]+ ' ========= ' + x[2] + ' ========= ' + x[3] + ' ========= ' + x[4])
+                    # for item in ignore_list:
+                    #     if x[2].find(item) != -1:
+                    #         # desc = unidecode(x[8])
+                    #         print(unidecode(x[2]))
+                    #         break
+                    #     else:
+                    #         desc = unidecode(x[2])
 
-            elif x[5] != '' and x[0] == '' and x[1] == ''and x[2] == '' and x[3] == '' and x[4] == ''  :
-                # print(x[5]+ ' ========= ' + x[7] + ' ========= ' + x[8] + ' ========= ' + x[9])
-                date = x[5]
-                desc = x[7] 
-                amount = x[8]
-                balance = x[9]
-                
-                if balance > previous_balance: #deposit
-                    deposited = amount
-                    withdrawn = ''
-                else:
-                    deposited = ''
-                    withdrawn = amount
-                previous_balance = balance
-                
-                category = get_category(desc, sub_categories)
-                if category == False:
-                    missing_category = True
-                line_items.append((date, desc, withdrawn, deposited, balance, category))
+                    date = x[0]
+                    desc = unidecode(x[2])
+                    amount = x[3]
+                    balance = x[4]
+                    
+                    if balance > previous_balance: #deposit
+                        deposited = amount
+                        withdrawn = ''
+                    else:
+                        deposited = ''
+                        withdrawn = amount
+                    previous_balance = balance
+                    
+                    category = get_category(desc, sub_categories)
+                    if category == False:
+                        missing_category = True
+                    line_items.append((date, desc, withdrawn, deposited, balance, category))
 
-            elif x[2] != ''  and x[0] == '' and x[1] == '':
-                # print(' ========= ' + x[2] + ' ========= ' + x[3] + ' ========= ' + x[4])
-                date = ''
-                desc = x[2] 
-                amount = x[3]
-                balance = x[4]
-                
-                if balance > previous_balance: #deposit
-                    deposited = amount
-                    withdrawn = ''
-                else:
-                    deposited = ''
-                    withdrawn = amount
-                previous_balance = balance
-                
-                category = get_category(desc, sub_categories)
-                if category == False:
-                    missing_category = True
-                line_items.append((date, desc, withdrawn, deposited, balance, category))
+                elif x[5] != '' and x[0] == '' and x[1] == ''and x[2] == '' and x[3] == '' and x[4] == ''  :
+                    # print(x[5]+ ' ========= ' + x[7] + ' ========= ' + x[8] + ' ========= ' + x[9])
+                    date = x[5]
+                    desc = x[7] 
+                    amount = x[8]
+                    balance = x[9]
+                    
+                    if balance > previous_balance: #deposit
+                        deposited = amount
+                        withdrawn = ''
+                    else:
+                        deposited = ''
+                        withdrawn = amount
+                    previous_balance = balance
+                    
+                    category = get_category(desc, sub_categories)
+                    if category == False:
+                        missing_category = True
+                    line_items.append((date, desc, withdrawn, deposited, balance, category))
 
-            elif x[11] != ''  and x[0] == '' and x[1] == '' and x[2] == '' and x[3] == '' and x[4] == ''and x[5] == ''and x[6] == ''and x[7] == '' and x[8] == ''and x[9] == ''and x[10] == '':
-                # print(' ========= ' + x[11] + ' ' + x[14] + ' ========= ' + x[15] + ' ========= ' + x[16])
-                date = ''
-                desc = x[11] + ' ' + x[14] 
-                amount = x[15]
-                balance = x[16]
-                
-                if balance > previous_balance: #deposit
-                    deposited = amount
-                    withdrawn = ''
-                else:
-                    deposited = ''
-                    withdrawn = amount
-                previous_balance = balance
-                
-                category = get_category(desc, sub_categories)
-                if category == False:
-                    missing_category = True
-                line_items.append((date, desc, withdrawn, deposited, balance, category))
+                elif x[2] != ''  and x[0] == '' and x[1] == '':
+                    # print(' ========= ' + x[2] + ' ========= ' + x[3] + ' ========= ' + x[4])
+                    date = ''
+                    desc = x[2] 
+                    amount = x[3]
+                    balance = x[4]
+                    
+                    if balance > previous_balance: #deposit
+                        deposited = amount
+                        withdrawn = ''
+                    else:
+                        deposited = ''
+                        withdrawn = amount
+                    previous_balance = balance
+                    
+                    category = get_category(desc, sub_categories)
+                    if category == False:
+                        missing_category = True
+                    line_items.append((date, desc, withdrawn, deposited, balance, category))
 
-            elif x[9] != ''  and x[0] == '' and x[1] == '' and x[2] == '' and x[3] == '' and x[4] == ''and x[5] == ''and x[6] == ''and x[7] == '' and x[8] == '':
-                # print(x[9] + ' ========= ' + x[11] + ' ' + x[14] + ' ========= ' + x[15] + ' ========= ' + x[16])
-                date = x[9]
-                desc = x[11] + ' ' + x[14] 
-                amount = x[15]
-                balance = x[16]
-                
-                if balance > previous_balance: #deposit
-                    deposited = amount
-                    withdrawn = ''
-                else:
-                    deposited = ''
-                    withdrawn = amount
-                previous_balance = balance
-                
-                category = get_category(desc, sub_categories)
-                if category == False:
-                    missing_category = True
-                line_items.append((date, desc, withdrawn, deposited, balance, category))
+                elif x[11] != ''  and x[0] == '' and x[1] == '' and x[2] == '' and x[3] == '' and x[4] == ''and x[5] == ''and x[6] == ''and x[7] == '' and x[8] == ''and x[9] == ''and x[10] == '':
+                    # print(' ========= ' + x[11] + ' ' + x[14] + ' ========= ' + x[15] + ' ========= ' + x[16])
+                    date = ''
+                    desc = x[11] + ' ' + x[14] 
+                    amount = x[15]
+                    balance = x[16]
+                    
+                    if balance > previous_balance: #deposit
+                        deposited = amount
+                        withdrawn = ''
+                    else:
+                        deposited = ''
+                        withdrawn = amount
+                    previous_balance = balance
+                    
+                    category = get_category(desc, sub_categories)
+                    if category == False:
+                        missing_category = True
+                    line_items.append((date, desc, withdrawn, deposited, balance, category))
 
-            elif x[7] != '' and x[0] == '' and x[1] == ''and x[2] == '' and x[3] == '' and x[4] == ''and x[5] == ''and x[6] == '' and x[7] not in ignore_list:
-                # print(' ========= ' + x[7] + ' ========= ' + x[8] + ' ========= ' + x[9])
-                date = ''
-                desc = x[7]
-                amount = x[8]
-                balance = x[9]
-                
-                if balance > previous_balance: #deposit
-                    deposited = amount
-                    withdrawn = ''
-                else:
-                    deposited = ''
-                    withdrawn = amount
-                previous_balance = balance
-                
-                category = get_category(desc, sub_categories)
-                if category == False:
-                    missing_category = True
-                line_items.append((date, desc, withdrawn, deposited, balance, category))
+                elif x[9] != ''  and x[0] == '' and x[1] == '' and x[2] == '' and x[3] == '' and x[4] == ''and x[5] == ''and x[6] == ''and x[7] == '' and x[8] == '':
+                    # print(x[9] + ' ========= ' + x[11] + ' ' + x[14] + ' ========= ' + x[15] + ' ========= ' + x[16])
+                    date = x[9]
+                    desc = x[11] + ' ' + x[14] 
+                    amount = x[15]
+                    balance = x[16]
+                    
+                    if balance > previous_balance: #deposit
+                        deposited = amount
+                        withdrawn = ''
+                    else:
+                        deposited = ''
+                        withdrawn = amount
+                    previous_balance = balance
+                    
+                    category = get_category(desc, sub_categories)
+                    if category == False:
+                        missing_category = True
+                    line_items.append((date, desc, withdrawn, deposited, balance, category))
+
+                elif x[7] != '' and x[0] == '' and x[1] == ''and x[2] == '' and x[3] == '' and x[4] == ''and x[5] == ''and x[6] == '':
+                    # print(' ========= ' + x[7] + ' ========= ' + x[8] + ' ========= ' + x[9])
+                    date = ''
+                    desc = x[7]
+                    amount = x[8]
+                    balance = x[9]
+                    
+                    if balance > previous_balance: #deposit
+                        deposited = amount
+                        withdrawn = ''
+                    else:
+                        deposited = ''
+                        withdrawn = amount
+                    previous_balance = balance
+                    
+                    category = get_category(desc, sub_categories)
+                    if category == False:
+                        missing_category = True
+                    line_items.append((date, desc, withdrawn, deposited, balance, category))
 
 
     # line_items = []
