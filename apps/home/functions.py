@@ -1135,7 +1135,7 @@ def update_subcategories(obj):
 def rbc_transaction(mystr):
     mystr = mystr.lstrip()
     transaction = []
-    date_pattern = re.compile("((\d{1,2})\s?(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec))")  # type: Pattern[str]
+    date_pattern = re.compile("((\d{1,2})\s?(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec))")  # type Pattern[str]
     amount_pattern = re.compile('-?[0-9,]+\.[0-9]{2}')
     
     date_match = re.findall(date_pattern, mystr)

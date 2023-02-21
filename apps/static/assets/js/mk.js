@@ -357,9 +357,9 @@ mk = {
         for (let i = 0; i < summary.length; i++) {
           // sum = .replace(new RegExp("&"+"#"+"x27;", "g"), "'");
           labels.push(i+1);
-          withdrawn.push(summary[i][1]);
-          deposited.push(summary[i][2]);
-          // console.log(summary[i]);
+          withdrawn.push(summary[i][2]);
+          deposited.push(summary[i][3]);
+          console.log(summary[i]);
           // console.log(summary[i] + "<br>") ;
         }
         all_amount = withdrawn.concat(deposited)
