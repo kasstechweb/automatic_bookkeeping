@@ -191,7 +191,7 @@ def download_csv(request):
                 transactions = []
                 
                 for file_id in files_ids:
-                    print(file_id)
+                    # print(file_id)
                     file = Document.objects.get(pk=file_id)
                     file_name = str(file.docfile).rsplit('.', 1)[0]
                     filename = Path(settings.MEDIA_ROOT + file_name + '.csv')
@@ -350,13 +350,13 @@ def statements_history(request):
 def categories_summary(request):
     if request.method == "POST":
         file_name = request.POST.get('file_name')
-        print(file_name)
+        # print(file_name)
         transactions = functions.read_csv(Path(settings.MEDIA_ROOT + '/statements/' + file_name) )
         categories = DictionaryCategories.objects.all()
         summary = []
 
         current_user = request.user
-        print(current_user.id)
+        # print(current_user.id)
         company_details = Company.objects.get(user_id = current_user.id)
         # for tr in transactions:
         #     print(tr)
@@ -381,7 +381,7 @@ def categories_summary(request):
                     deposited += float(amount)
             # add category name and total amount to summary 
             if withdrawn != 0.00 or deposited != 0.00:
-                summary.append([cat.name, format(withdrawn, '.2f'), format(deposited, '.2f')])
+                summary.append([cat.name, cat.code, format(withdrawn, '.2f'), format(deposited, '.2f')])
         
         new_filename = str(file_name).rsplit('.', 1)[0]
 
@@ -411,8 +411,8 @@ def categories_summary(request):
             for index, x in enumerate(summary):
                 functions.categories_percent_write(new_filename, index+1, 100)
                 summary[index].append('100')
-        print('len summary' + str(len(summary)))
-        print('len percentage_data' + str(len(percentage_data)))
+        # print('len summary' + str(len(summary)))
+        # print('len percentage_data' + str(len(percentage_data)))
         # for x in summary:
         #     print(x)
 
@@ -420,6 +420,8 @@ def categories_summary(request):
         # functions.categories_percent_read(new_filename)
         # functions.categories_percent_write(new_filename, 2, 57)
         # functions.categories_percent_write(new_filename, 5, 57)
+        for x in summary:
+            print(x)
         return render(request, 'home/categories_summary.html',
                                 {
                                     'summary': summary,
@@ -457,7 +459,7 @@ def profile(request):
         user_company = Company.objects.get(user_id = current_user.id)
     else:
         user_company = ''
-    print(user_company)
+    # print(user_company)
     if user_company.name == None:
         user_company.name = ''
     if user_company.phone == None:
@@ -470,7 +472,7 @@ def profile(request):
         user_company.province = ''
     if user_company.zip == None:
         user_company.zip = ''
-    print(user_company.street)
+    # print(user_company.street)
     try:
         return render(request, 'home/profile.html', 
             {
@@ -493,7 +495,7 @@ def profile(request):
 def manual_categories(request):
     context = {}
     if request.method == "POST":
-        print('request post')
+        # print('request post')
         file_name = request.POST.get('file_name')
         
     #     # file = Document.objects.get(pk=file_id)
@@ -526,7 +528,7 @@ def manual_categories(request):
         newdoc = Document(docfile = ('statements'+ "\\" + fila_name))
         newdoc.submitter = request.user
         newdoc.save()
-        print(newdoc.pk)
+        # print(newdoc.pk)
         categories = DictionaryCategories.objects.all()
         return render(request, 'home/manual_categories.html', 
                     {

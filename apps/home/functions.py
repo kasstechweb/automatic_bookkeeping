@@ -134,166 +134,262 @@ def rbc_pdftocsv(request, file_name):
     text = '' # new line
     with pdfplumber.open(settings.MEDIA_ROOT + "/" + str(file_name)) as pdf:
         for pdf_page in pdf.pages:
-            single_page_text = pdf_page.extract_text(x_tolerance=1, y_tolerance=0, layout=False)
+            single_page_text = pdf_page.extract_text(x_tolerance=1, y_tolerance=0,layout=False)
             text = text + '\n' + single_page_text
 
-    inv_line_re = re.compile(r'(\d{1,2}\s(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec))?\s?([a-zA-Z].+)(\s\d{1,3}(?:,?\d{3})*\.\d{2})(\s\d{1,3}(?:,?\d{3})*\.\d{2})'
-                                '|(\d{1,2}\s(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec))?\s?([a-zA-Z].+)(\s\d{1,3}(?:,?\d{3})*\.\d{2})'
-                                '|(\d{1,2}\s(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec))?\s?([a-zA-Z].+)\n(([\*|\-|\_|A-Z|a-z|0-9]\n)+)([a-zA-Z].+)(\s\d{1,3}(?:,?\d{3})*\.\d{2})(\s\d{1,3}(?:,?\d{3})*\.\d{2})'
-                        )
-    ignore_list = ['Opening Balance', 'Opening balance', 'Closing balance', 'Closing Balance', 'Total withdrawals', 'Total deposits', 'Total cheques', 'Balance']
+    text_match = re.compile(r"(\bOpening Balance|Opening balance\s\d{1,3}(?:,?\d{3})*\.\d{2}.*?\b)([\s\S]*)(\bClosing Balance|Closing balance\b)")
+    text2 = text_match.findall(text)
+    text2 = text2[0][1]
 
-    # get opening balance
-    opening_line_re = re.compile(r'(\bOpening Balance\b|\bOpening balance\b)\s(.?\d{1,3}(?:,?\d{3})*\.\d{2}.*?)')
-    opening_line = opening_line_re.findall(text)
-    opening_balance =  opening_line[0][1]
-    opening_balance = opening_balance.replace(',', '')
+    # ignore_list = ['Opening Balance', 'Opening balance', 'Closing balance', 'Closing Balance', 'Total withdrawals', 'Total deposits', 'Total cheques', 'Balance', 'Serial', 'Account Fees']
+
+    # lines = text.splitlines()
+    ignore_list = [
+        'Opening Balance', 
+        'Opening balance', 
+        'Closing balance', 
+        'Closing Balance', 
+        'Total withdrawals', 
+        'Total deposits', 
+        'Total cheques', 
+        'Balance', 
+        'Serial', 
+        'Account Fees',
+        'Your RBC',
+        'Date Description',
+        ]
+    revenue_list = ['Deposit', 'deposit', 'ABM fee credit', 'Online Banking transfer', 'e-Transfer received']
+    lines = text2.splitlines()
+    previous_line = ''
+    revenue = []    
 
     line_items = []
+    sub_categories = DictionarySubcategories.objects.all()
+    if lines:
+        for line in lines:
+
+            found_in_ignore = False
+            for item in ignore_list:
+                if line.find(item) != -1 or previous_line.find(item) != -1:
+                    found_in_ignore = True
+                    continue
+            # skip small text
+            if len(line) <= 5:
+                continue
+            # add previous lines in case of two lines
+            if previous_line != '' and not found_in_ignore:
+                line = previous_line + line
+                previous_line = ''
+            
+            tr = rbc_transaction(line)
+
+            if not tr:
+                previous_line = line
+                continue
+
+            found_in_revenue = False
+            for item in revenue_list:
+                if tr[1].find(item) != -1:
+                    found_in_revenue = True
+                    revenue.append(tr[2])
+                    continue
+            if not found_in_revenue:
+                date = tr[0]
+                desc = tr[1]
+                withdrawn = tr[2]
+                balance = ''
+                if len(tr) > 3:
+                    balance = tr[3]
+                category = get_category(desc, sub_categories)
+                if category == False:
+                    missing_category = True
+                line_items.append((date, desc, withdrawn, '', balance, category))
+                # print('==============================================================================')
+                # print(tr)
+    
+    # calculate total revenue
+    total_revenue = 0.0
+    for x in revenue:
+        x = x.replace(',', '')
+        total_revenue = total_revenue + float(x)
+        # print(x)
+    line_items.append((date, 'Total Revenue', '', total_revenue, '', get_category('revenue', sub_categories)))
+            # tr = rbc_transaction(line)
+            # if len(tr) > 0:
+            #     found_in_ignore = False
+            #     for item in ignore_list:
+            #         if tr[1].find(item) != -1:
+            #             found_in_ignore = True
+            #             continue
+            #     if not found_in_ignore:
+            #         date = tr[0]
+            #         desc = tr[1]
+            #         withdrawn = tr[2]
+            #         balance = ''
+            #         if len(tr) > 3:
+            #             balance = tr[3]
+            #         category = get_category(desc, sub_categories)
+            #         if category == False:
+            #             missing_category = True
+            #         line_items.append((date, desc, withdrawn, 'deposited', balance, category))
+            #         print("date: " + date + "desc: " + desc + "amount: " + withdrawn + "balance: " + balance)
+    # inv_line_re = re.compile(r'(\d{1,2}\s(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec))?\s?([a-zA-Z].+)(\s\d{1,3}(?:,?\d{3})*\.\d{2})(\s\d{1,3}(?:,?\d{3})*\.\d{2})'
+    #                             '|(\d{1,2}\s(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec))?\s?([a-zA-Z].+)(\s\d{1,3}(?:,?\d{3})*\.\d{2})'
+    #                             '|(\d{1,2}\s(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec))?\s?([a-zA-Z].+)\n(([\*|\-|\_|A-Z|a-z|0-9]\n)+)([a-zA-Z].+)(\s\d{1,3}(?:,?\d{3})*\.\d{2})(\s\d{1,3}(?:,?\d{3})*\.\d{2})'
+    #                     )
+    # ignore_list = ['Opening Balance', 'Opening balance', 'Closing balance', 'Closing Balance', 'Total withdrawals', 'Total deposits', 'Total cheques', 'Balance']
+
+    # get opening balance
+    # opening_line_re = re.compile(r'(\bOpening Balance\b|\bOpening balance\b)\s(.?\d{1,3}(?:,?\d{3})*\.\d{2}.*?)')
+    # opening_line = opening_line_re.findall(text)
+    # opening_balance =  opening_line[0][1]
+    # opening_balance = opening_balance.replace(',', '')
+
+    # line_items = []
 
     # for line in text.split('\n'):
         # restart = False
-    previous_balance = opening_balance
-    line = inv_line_re.findall(text)
-    if line:
-        sub_categories = DictionarySubcategories.objects.all()
+    # previous_balance = opening_balance
+    # line = inv_line_re.findall(text)
+    # if line:
+    #     sub_categories = DictionarySubcategories.objects.all()
 
-        for x in line:
-            found = False
-            for item in ignore_list:
-                if x[7].find(item) != -1:
-                    # desc = unidecode(x[8])
-                    # print('found')
-                    found = True
-                    break
-            if not found:
-                if x[0] != '':
-                    print(x[0]+ ' ========= ' + x[2] + ' ========= ' + x[3] + ' ========= ' + x[4])
-                    # for item in ignore_list:
-                    #     if x[2].find(item) != -1:
-                    #         # desc = unidecode(x[8])
-                    #         print(unidecode(x[2]))
-                    #         break
-                    #     else:
-                    #         desc = unidecode(x[2])
+    #     for x in line:
+    #         found = False
+    #         for item in ignore_list:
+    #             if x[7].find(item) != -1:
+    #                 # desc = unidecode(x[8])
+    #                 # print('found')
+    #                 found = True
+    #                 break
+    #         if not found:
+    #             if x[0] != '':
+    #                 print(x[0]+ ' ========= ' + x[2] + ' ========= ' + x[3] + ' ========= ' + x[4])
+    #                 # for item in ignore_list:
+    #                 #     if x[2].find(item) != -1:
+    #                 #         # desc = unidecode(x[8])
+    #                 #         print(unidecode(x[2]))
+    #                 #         break
+    #                 #     else:
+    #                 #         desc = unidecode(x[2])
 
-                    date = x[0]
-                    desc = unidecode(x[2])
-                    amount = x[3]
-                    balance = x[4]
+    #                 date = x[0]
+    #                 desc = unidecode(x[2])
+    #                 amount = x[3]
+    #                 balance = x[4]
                     
-                    if balance > previous_balance: #deposit
-                        deposited = amount
-                        withdrawn = ''
-                    else:
-                        deposited = ''
-                        withdrawn = amount
-                    previous_balance = balance
+    #                 if balance > previous_balance: #deposit
+    #                     deposited = amount
+    #                     withdrawn = ''
+    #                 else:
+    #                     deposited = ''
+    #                     withdrawn = amount
+    #                 previous_balance = balance
                     
-                    category = get_category(desc, sub_categories)
-                    if category == False:
-                        missing_category = True
-                    line_items.append((date, desc, withdrawn, deposited, balance, category))
+    #                 category = get_category(desc, sub_categories)
+    #                 if category == False:
+    #                     missing_category = True
+    #                 line_items.append((date, desc, withdrawn, deposited, balance, category))
 
-                elif x[5] != '' and x[0] == '' and x[1] == ''and x[2] == '' and x[3] == '' and x[4] == ''  :
-                    # print(x[5]+ ' ========= ' + x[7] + ' ========= ' + x[8] + ' ========= ' + x[9])
-                    date = x[5]
-                    desc = x[7] 
-                    amount = x[8]
-                    balance = x[9]
+    #             elif x[5] != '' and x[0] == '' and x[1] == ''and x[2] == '' and x[3] == '' and x[4] == ''  :
+    #                 # print(x[5]+ ' ========= ' + x[7] + ' ========= ' + x[8] + ' ========= ' + x[9])
+    #                 date = x[5]
+    #                 desc = x[7] 
+    #                 amount = x[8]
+    #                 balance = x[9]
                     
-                    if balance > previous_balance: #deposit
-                        deposited = amount
-                        withdrawn = ''
-                    else:
-                        deposited = ''
-                        withdrawn = amount
-                    previous_balance = balance
+    #                 if balance > previous_balance: #deposit
+    #                     deposited = amount
+    #                     withdrawn = ''
+    #                 else:
+    #                     deposited = ''
+    #                     withdrawn = amount
+    #                 previous_balance = balance
                     
-                    category = get_category(desc, sub_categories)
-                    if category == False:
-                        missing_category = True
-                    line_items.append((date, desc, withdrawn, deposited, balance, category))
+    #                 category = get_category(desc, sub_categories)
+    #                 if category == False:
+    #                     missing_category = True
+    #                 line_items.append((date, desc, withdrawn, deposited, balance, category))
 
-                elif x[2] != ''  and x[0] == '' and x[1] == '':
-                    # print(' ========= ' + x[2] + ' ========= ' + x[3] + ' ========= ' + x[4])
-                    date = ''
-                    desc = x[2] 
-                    amount = x[3]
-                    balance = x[4]
+    #             elif x[2] != ''  and x[0] == '' and x[1] == '':
+    #                 # print(' ========= ' + x[2] + ' ========= ' + x[3] + ' ========= ' + x[4])
+    #                 date = ''
+    #                 desc = x[2] 
+    #                 amount = x[3]
+    #                 balance = x[4]
                     
-                    if balance > previous_balance: #deposit
-                        deposited = amount
-                        withdrawn = ''
-                    else:
-                        deposited = ''
-                        withdrawn = amount
-                    previous_balance = balance
+    #                 if balance > previous_balance: #deposit
+    #                     deposited = amount
+    #                     withdrawn = ''
+    #                 else:
+    #                     deposited = ''
+    #                     withdrawn = amount
+    #                 previous_balance = balance
                     
-                    category = get_category(desc, sub_categories)
-                    if category == False:
-                        missing_category = True
-                    line_items.append((date, desc, withdrawn, deposited, balance, category))
+    #                 category = get_category(desc, sub_categories)
+    #                 if category == False:
+    #                     missing_category = True
+    #                 line_items.append((date, desc, withdrawn, deposited, balance, category))
 
-                elif x[11] != ''  and x[0] == '' and x[1] == '' and x[2] == '' and x[3] == '' and x[4] == ''and x[5] == ''and x[6] == ''and x[7] == '' and x[8] == ''and x[9] == ''and x[10] == '':
-                    # print(' ========= ' + x[11] + ' ' + x[14] + ' ========= ' + x[15] + ' ========= ' + x[16])
-                    date = ''
-                    desc = x[11] + ' ' + x[14] 
-                    amount = x[15]
-                    balance = x[16]
+    #             elif x[11] != ''  and x[0] == '' and x[1] == '' and x[2] == '' and x[3] == '' and x[4] == ''and x[5] == ''and x[6] == ''and x[7] == '' and x[8] == ''and x[9] == ''and x[10] == '':
+    #                 # print(' ========= ' + x[11] + ' ' + x[14] + ' ========= ' + x[15] + ' ========= ' + x[16])
+    #                 date = ''
+    #                 desc = x[11] + ' ' + x[14] 
+    #                 amount = x[15]
+    #                 balance = x[16]
                     
-                    if balance > previous_balance: #deposit
-                        deposited = amount
-                        withdrawn = ''
-                    else:
-                        deposited = ''
-                        withdrawn = amount
-                    previous_balance = balance
+    #                 if balance > previous_balance: #deposit
+    #                     deposited = amount
+    #                     withdrawn = ''
+    #                 else:
+    #                     deposited = ''
+    #                     withdrawn = amount
+    #                 previous_balance = balance
                     
-                    category = get_category(desc, sub_categories)
-                    if category == False:
-                        missing_category = True
-                    line_items.append((date, desc, withdrawn, deposited, balance, category))
+    #                 category = get_category(desc, sub_categories)
+    #                 if category == False:
+    #                     missing_category = True
+    #                 line_items.append((date, desc, withdrawn, deposited, balance, category))
 
-                elif x[9] != ''  and x[0] == '' and x[1] == '' and x[2] == '' and x[3] == '' and x[4] == ''and x[5] == ''and x[6] == ''and x[7] == '' and x[8] == '':
-                    # print(x[9] + ' ========= ' + x[11] + ' ' + x[14] + ' ========= ' + x[15] + ' ========= ' + x[16])
-                    date = x[9]
-                    desc = x[11] + ' ' + x[14] 
-                    amount = x[15]
-                    balance = x[16]
+    #             elif x[9] != ''  and x[0] == '' and x[1] == '' and x[2] == '' and x[3] == '' and x[4] == ''and x[5] == ''and x[6] == ''and x[7] == '' and x[8] == '':
+    #                 # print(x[9] + ' ========= ' + x[11] + ' ' + x[14] + ' ========= ' + x[15] + ' ========= ' + x[16])
+    #                 date = x[9]
+    #                 desc = x[11] + ' ' + x[14] 
+    #                 amount = x[15]
+    #                 balance = x[16]
                     
-                    if balance > previous_balance: #deposit
-                        deposited = amount
-                        withdrawn = ''
-                    else:
-                        deposited = ''
-                        withdrawn = amount
-                    previous_balance = balance
+    #                 if balance > previous_balance: #deposit
+    #                     deposited = amount
+    #                     withdrawn = ''
+    #                 else:
+    #                     deposited = ''
+    #                     withdrawn = amount
+    #                 previous_balance = balance
                     
-                    category = get_category(desc, sub_categories)
-                    if category == False:
-                        missing_category = True
-                    line_items.append((date, desc, withdrawn, deposited, balance, category))
+    #                 category = get_category(desc, sub_categories)
+    #                 if category == False:
+    #                     missing_category = True
+    #                 line_items.append((date, desc, withdrawn, deposited, balance, category))
 
-                elif x[7] != '' and x[0] == '' and x[1] == ''and x[2] == '' and x[3] == '' and x[4] == ''and x[5] == ''and x[6] == '':
-                    # print(' ========= ' + x[7] + ' ========= ' + x[8] + ' ========= ' + x[9])
-                    date = ''
-                    desc = x[7]
-                    amount = x[8]
-                    balance = x[9]
+    #             elif x[7] != '' and x[0] == '' and x[1] == ''and x[2] == '' and x[3] == '' and x[4] == ''and x[5] == ''and x[6] == '':
+    #                 # print(' ========= ' + x[7] + ' ========= ' + x[8] + ' ========= ' + x[9])
+    #                 date = ''
+    #                 desc = x[7]
+    #                 amount = x[8]
+    #                 balance = x[9]
                     
-                    if balance > previous_balance: #deposit
-                        deposited = amount
-                        withdrawn = ''
-                    else:
-                        deposited = ''
-                        withdrawn = amount
-                    previous_balance = balance
+    #                 if balance > previous_balance: #deposit
+    #                     deposited = amount
+    #                     withdrawn = ''
+    #                 else:
+    #                     deposited = ''
+    #                     withdrawn = amount
+    #                 previous_balance = balance
                     
-                    category = get_category(desc, sub_categories)
-                    if category == False:
-                        missing_category = True
-                    line_items.append((date, desc, withdrawn, deposited, balance, category))
+    #                 category = get_category(desc, sub_categories)
+    #                 if category == False:
+    #                     missing_category = True
+    #                 line_items.append((date, desc, withdrawn, deposited, balance, category))
 
 
     # line_items = []
@@ -333,7 +429,7 @@ def rbc_pdftocsv(request, file_name):
 
 # function to convert atb bank pdf to csv file
 def atb_pdftocsv(request, file_name):
-    print('atb pdf called')
+    # print('atb pdf called')
     missing_category = False
     # Inv = namedtuple('Inv', 'date_charged date_posted description amount category')
     text = '' # new line
@@ -498,7 +594,7 @@ def td_process_csv(file_name):
 
 # atb function to read csv file and add categories and check if missing category
 def atb_process_csv(file_name):
-    print('atb csv called')
+    # print('atb csv called')
     missing_category = False
     sub_categories = DictionarySubcategories.objects.all()
     transactions = read_csv(settings.MEDIA_ROOT + "/" + str(file_name))
@@ -683,9 +779,9 @@ def remove_from_csv(request):
     # print('remove from csv called')
     # print(request.POST.get('id')) 
     # print(request.POST.get('file_name')) 
-    print('removing')
-    print(Path(settings.MEDIA_ROOT + '/statements/' +request.POST.get('file_name')))
-    print(int(request.POST.get('id')))
+    # print('removing')
+    # print(Path(settings.MEDIA_ROOT + '/statements/' +request.POST.get('file_name')))
+    # print(int(request.POST.get('id')))
     csv_file = pd.read_csv(Path(settings.MEDIA_ROOT + '/statements/' +request.POST.get('file_name')), header=None)
     # print(csv_file)
     csv_file.drop(int(request.POST.get('id'))-1,axis=0,inplace=True)
@@ -768,7 +864,7 @@ def path_and_rename(ext):
     return os.path.join(upload_to, filename)
 
 def update_profile(request):
-    print(request.POST.get('user_id'))
+    # print(request.POST.get('user_id'))
     user_id = request.POST.get('user_id')
     user = User.objects.get(pk = user_id)
     user.username = request.POST.get('username')
@@ -776,7 +872,7 @@ def update_profile(request):
     user.save()
     # user.comp_name = request.POST.get('comp_name')
     if Company.objects.filter(user_id = user_id).exists():
-        print('exists')
+        # print('exists')
         company = Company.objects.get(user_id = user_id)
         company.name = request.POST.get('comp_name')
         company.phone = request.POST.get('phone')
@@ -805,7 +901,7 @@ def update_profile(request):
     return JsonResponse(data)
 
 def update_password(request):
-    print(request.POST.get('user_id'))
+    # print(request.POST.get('user_id'))
     
     # user.username = request.POST.get('username')
     # user.email = request.POST.get('email')
@@ -826,18 +922,18 @@ def update_password(request):
         return JsonResponse(data)
     
 def delete_statement(request):
-    print(request.POST.get('file_id'))
+    # print(request.POST.get('file_id'))
     file_id = request.POST.get('file_id')
     document = Document.objects.get(pk=file_id)
     file_path_name = document.docfile
-    print(file_path_name)
+    # print(file_path_name)
     gfi_file = str(file_path_name).rsplit('\\', 1)[1]
     gfi_file = str(gfi_file).rsplit('.', 1)[0] + '.gfi'
     percentage_file = str(gfi_file).rsplit('.', 1)[0] + '_percent.txt'
     csv_path = Path(settings.MEDIA_ROOT + str(file_path_name))
     gfi_path = Path(settings.MEDIA_ROOT + '/statements/' + str(gfi_file))
     percent_path = Path(settings.MEDIA_ROOT + '/statements/' + str(percentage_file))
-    print(gfi_file)
+    # print(gfi_file)
     if csv_path.exists():
         os.remove(csv_path)
     if gfi_path.exists():
@@ -853,15 +949,15 @@ def delete_statement(request):
     return JsonResponse(data)
 
 def add_transaction(request):
-    print(request.POST.get('file_name'))
-    print("add category requested")
+    # print(request.POST.get('file_name'))
+    # print("add category requested")
     file_name = request.POST.get('file_name')
     date = request.POST.get('date')
     new_date = datetime.strptime(date, '%Y-%m-%d')
     day = new_date.strftime("%d")
     month = new_date.strftime("%b")
     final_date = day + '-' + month
-    print(day + '-' + month)
+    # print(day + '-' + month)
     transaction = request.POST.get('transaction')
     category = request.POST.get('category')
     withdrawn = request.POST.get('withdrawn')
@@ -881,16 +977,16 @@ def add_transaction(request):
     return JsonResponse(data)
 
 def categories_percent_read(file_name):
-    print('categories_percentage called')
+    # print('categories_percentage called')
     file_name = Path(settings.MEDIA_ROOT + '/statements/' + file_name +  str('_percent.txt'))
     # mode = 'a' if os.path.exists(file_name) else 'w'
     with open(file_name, 'r') as f: 
         file_contents = f.read()
         # print(s)
-    print(file_contents)
+    # print(file_contents)
 
 def categories_percent_write(file_name, category, percent):
-    print('categories_percentage write called')
+    # print('categories_percentage write called')
     category -= 1
     file_name = Path(settings.MEDIA_ROOT + '/statements/' + file_name +  str('_percent.txt'))
     if not os.path.exists(file_name):
@@ -914,7 +1010,7 @@ def categories_percent_write(file_name, category, percent):
         file.writelines(data)
 
 def update_category_summary_percentage(request):
-    print('update_category_summary_percentage called')
+    # print('update_category_summary_percentage called')
     category = int(request.POST.get('category'))
     new_filename = request.POST.get('new_filename')
     percentage = request.POST.get('percentage')
@@ -929,7 +1025,7 @@ def generate_gfi(request):
     # for x in summary:
     #     print(x)
     current_user = request.user
-    print(current_user.id)
+    # print(current_user.id)
     company_details = Company.objects.get(user_id = current_user.id)
 
     line = '"GIFI01","","","","","Intuit Inc.","","","","","QuickBooks Online","","",'
@@ -996,7 +1092,7 @@ def generate_gfi(request):
     # print(type(summary)) 
     with open(settings.MEDIA_ROOT + '/statements/' + new_filename + ".gfi", "w") as f:
         for row in summary:
-            print(row)
+            # print(row)
             category = row[0]
             categories = DictionaryCategories.objects.get(name = category)
             code = categories.code
@@ -1007,14 +1103,14 @@ def generate_gfi(request):
                 deposited = row[2]
                 line += '"' + str(code) + '",'
                 if withdrawn != '0.00':
-                    print(withdrawn)
-                    print(type(withdrawn))
-                    print(percentage)
-                    print(type(percentage))
+                    # print(withdrawn)
+                    # print(type(withdrawn))
+                    # print(percentage)
+                    # print(type(percentage))
                     amount = float(withdrawn) * percentage
                     line += str('%#.2f' % amount) + '\n'
                 if deposited != '0.00':
-                    print(deposited)
+                    # print(deposited)
                     amount = float(deposited) * percentage
                     line += str('%#.2f' % amount) + '\n'
                 f.write(line)
@@ -1032,5 +1128,65 @@ def update_subcategories(obj):
     if not check_sub_category: # not found duplicate
         sub_category = DictionarySubcategories.objects.create(name= remove_digits(subcategory_approved.name), dictionary_category_id = subcategory_approved.dictionary_category_id)
         sub_category.save()
-    print(subcategory_approved.name)
-    print('update_subcategories called')
+    # print(subcategory_approved.name)
+    # print('update_subcategories called')
+
+
+def rbc_transaction(mystr):
+    mystr = mystr.lstrip()
+    transaction = []
+    date_pattern = re.compile("((\d{1,2})\s?(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec))")  # type: Pattern[str]
+    amount_pattern = re.compile('-?[0-9,]+\.[0-9]{2}')
+    
+    date_match = re.findall(date_pattern, mystr)
+    amount_match = re.findall(amount_pattern, mystr)
+    
+    if date_match:
+        transaction.append(date_match[0][0]) # add date to transaction
+        transaction_desc = re.sub(date_match[0][0], '', mystr) # remove date
+        if len(amount_match) == 0:
+            transaction.append(transaction_desc)
+    else:
+        transaction_desc = mystr
+        
+    # if amount more than two ignore the first
+    if len(amount_match) == 3:
+        transaction_desc = re.sub(amount_match[1], '', transaction_desc) # remove amount 0
+        transaction_desc = re.sub(amount_match[2], '', transaction_desc) # remove amount 1   
+        transaction_desc = transaction_desc.rstrip()
+        transaction_desc = transaction_desc.lstrip()
+        
+        if not date_match:
+            transaction.append('')
+        transaction.append(transaction_desc)
+        transaction.append(amount_match[1])
+        transaction.append(amount_match[2])
+        
+    elif len(amount_match) == 1: #only one amount found
+        transaction_desc = re.sub(amount_match[0], '', transaction_desc) # remove amount 0
+        transaction_desc = transaction_desc.rstrip()
+        transaction_desc = transaction_desc.lstrip()
+
+        if len(transaction_desc) == 0: # there is amount but no desc 
+            return False
+        
+        if not date_match:
+            transaction.append('')
+        transaction.append(transaction_desc)
+        transaction.append(amount_match[0])
+        
+    elif len(amount_match) == 2: # two amount found:
+        transaction_desc = re.sub(amount_match[0], '', transaction_desc) # remove amount 0
+        transaction_desc = re.sub(amount_match[1], '', transaction_desc) # remove amount 1   
+        transaction_desc = transaction_desc.rstrip()
+        transaction_desc = transaction_desc.lstrip()
+        
+        if not date_match:
+            transaction.append('')
+        transaction.append(transaction_desc)
+        transaction.append(amount_match[0])
+        transaction.append(amount_match[1])
+        
+    elif len(amount_match) == 0 and mystr != '': # two amount found:
+        return False
+    return transaction
