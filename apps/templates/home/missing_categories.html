@@ -178,7 +178,7 @@
           <input type="hidden" name="original_transaction" id="original_transaction">
 
           <div class="form-group">
-            <input id="aitransaction" class="form-control" type="text" name="transaction" required="true" placeholder="Transaction"/>
+            <input id="aitransaction" class="form-control" type="text" name="transaction" required="true" placeholder="Transaction" disabled/>
           </div>
 
           <div class="form-group">
@@ -194,13 +194,13 @@
           </div> -->
 
           <div class="modal-footer">
-            <button type="button" class="btn btn-primary btn-link" onclick="edit_csv_ajax()">
+            <button type="button" class="btn btn-primary btn-link" onclick="ai_edit_csv_ajax()">
               
               Save
             </button>
             <button type="button" class="btn btn-danger btn-link" data-dismiss="modal">Close</button>
           </div>
-          
+          <div id="ai_loader2" class="ml-auto mr-auto loader d-none"></div>
       </form>
       </div>
     </div>
@@ -438,6 +438,70 @@
           } 
           // console.log(data.duplicates_ids)
           $('#loader').addClass('d-none');
+      }).fail(function(data) {
+          console.log('errors happened: ' + data);
+      });
+  }
+
+  function ai_edit_csv_ajax(){
+    $('#ai_loader2').removeClass('d-none');
+    row_id = $('#row_id').val();
+    transaction = $('#aitransaction').val();
+    original_transaction = $('#aitransaction').val();
+    category = $('#ai_category').val()
+    // amount = $('#amount').val()
+    table = $('#datatables').DataTable();
+
+    // console.log(table.data())
+    // console.log(table.data().count())
+    // console.log(category)
+    $.ajax({
+          type: 'POST',
+          beforeSend: function(xhr, settings) {
+              function getCookie(name) {
+                  var cookieValue = null;
+                  if (document.cookie && document.cookie != '') {
+                      var cookies = document.cookie.split(';');
+                      for (var i = 0; i < cookies.length; i++) {
+                          var cookie = jQuery.trim(cookies[i]);
+                          // Does this cookie string begin with the name we want?
+                          if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                              cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                              break;
+                          }
+                      }
+                  }
+                  return cookieValue;
+              }
+              if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+                  // Only send the token to relative URLs i.e. locally.
+                  xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+              }
+          },
+          data: {
+            id: row_id,
+            transaction: transaction,
+            original_transaction: original_transaction,
+            category: category,
+            // amount: amount,
+            file_name: "{{ file_name }}"
+          },
+          url: "{% url 'edit_csv_and_dictionary' %}"
+      }).done(function(data) {
+          $('#aiModal').modal('toggle');
+          // var rowid = '#row_'+row_id;
+          // $("#datatables tbody").find(rowid).remove();
+          mk.showNotification('top','right', 'success', data.msg);
+
+          for (let index = 0; index < data.duplicates_ids.length; index++) {
+            // console.log(data.duplicates_ids[index]+1)
+            var row = '#row_' + (parseInt(data.duplicates_ids[index]) + 1);
+            // console.log(row);
+            $('#datatables').dataTable().fnDeleteRow(row);
+            $("#datatables tbody").find(row).remove();
+          } 
+          // console.log(data.duplicates_ids)
+          $('#ai_loader2').addClass('d-none');
       }).fail(function(data) {
           console.log('errors happened: ' + data);
       });

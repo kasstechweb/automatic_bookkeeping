@@ -801,7 +801,7 @@ def edit_csv_and_dictionary(request):
     duplicates_ids = []
 
     for index, row in enumerate(csvreader):
-        if remove_digits(transaction) in remove_digits(row[1]):
+        if remove_extras_ai(transaction) in remove_extras_ai(row[1]):
             duplicates_ids.append(index)
     file.close()
     
@@ -811,11 +811,12 @@ def edit_csv_and_dictionary(request):
         csv_file.iat[int(dup), 5] = request.POST.get('category') # 5 is category column
     csv_file.to_csv(Path(settings.MEDIA_ROOT + '/statements/' +request.POST.get('file_name')), index=False, header=None)
 
+    print(remove_extras_ai(transaction))
     # add to dictionary db
     category = DictionaryCategories.objects.get(name=request.POST.get('category'))
-    check_sub_category = DictionarySubcategoriesNotApproved.objects.filter(name= remove_digits(transaction)).exists()
+    check_sub_category = DictionarySubcategoriesNotApproved.objects.filter(name= remove_extras_ai(transaction)).exists()
     if not check_sub_category: # not found duplicate
-        sub_category = DictionarySubcategoriesNotApproved.objects.create(name= remove_digits(transaction), dictionary_category_id = category.pk, approved=0)
+        sub_category = DictionarySubcategoriesNotApproved.objects.create(name= remove_extras_ai(transaction), dictionary_category_id = category.pk, approved=0)
         sub_category.save()
 
     data = {'status': 200,
