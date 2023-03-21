@@ -40,6 +40,7 @@ urlpatterns = [
     # functions urls
     path('remove_from_csv/', functions.remove_from_csv, name='remove_from_csv'),
     path('edit_csv_and_dictionary/', functions.edit_csv_and_dictionary, name='edit_csv_and_dictionary'),
+    path('ai_get_category/', functions.ai_get_category, name='ai_get_category'),
     path('edit_csv/', functions.edit_csv, name='edit_csv'),
 
     path('update_profile/', functions.update_profile, name='update_profile'),

@@ -17,6 +17,7 @@ from .models import DictionaryCategories, DictionarySubcategories, Document, Com
 
 from datetime import datetime
 import json
+import openai
 
 # from .views import get_category, get_all_sub_categories
 
@@ -823,6 +824,65 @@ def edit_csv_and_dictionary(request):
             }
     return JsonResponse(data)
 
+def ai_get_category(request):
+    
+    # # get dduplicates list
+    # file = open(Path(settings.MEDIA_ROOT + '/statements/' +request.POST.get('file_name')))
+    # csvreader = csv.reader(file)
+    # # original_transaction = request.POST.get('original_transaction')
+    transaction = request.POST.get('transaction')
+    transaction = remove_extras_ai(transaction)
+    # Set up the OpenAI API client
+    openai.api_key = "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"
+
+    # Set up the model and prompt
+    model_engine = "text-davinci-003"
+    prompt = "categorize this bank transaction \"" + transaction + "\","
+    prompt = prompt + "choose from: Accounting fees,Advertising,Advertising and promotion,Amortization of intangible assets,Amortization of natural resource assets,Amortization of tangible assets,Appraisal fees,Architect Fees,Bad debt expense,Bank charges,Bonuses,Brokerage fees,Business taxes,Business taxes, licences and memberships,Camp supplies,Cash over / short,Collection and credit costs,Commissions,Computer-related expenses,Condominium fees,Consulting fees,Contributions to deferred income plans,Credit card charges,Crew share,Data processing,Delivery, freight and express,Directors fees,Donations,Dumping charges,Electricity,Employee benefits,Employee salaries,Employer's portion of employee benefits,Equipment rental,Fishing gear,Food and catering,Franchise fees,Fuel costs,Garbage removal,General and administrative expenses,Goodwill impairment loss,Government fees,Group insurance benefits,Heat,Insurance,Interest and bank charges,Interest on bonds and debentures,Interest on long term debt,Interest on mortgages,Interest on short term debt,Interest paid (financial institutions),Interest paid on bonds and debentures,Interest paid on deposits,Interfund transfer,Internet,Laboratory fees,Land fill fees,Laundry,Legal fees,Life insurance on executives,Loan losses,Machine shop expense,Management and administration fees,Management salaries,Meals and entertainment,Medical fees,Meetings and conventions,Memberships,Moorage (boat),Motor vehicle rentals,Nets and traps,Nova Scotia tax on large corporations,Occupancy costs,Office stationery and supplies,Office utilities,Other expenses,Other repairs and maintenance,Professional fees,Promotion,Property taxes,Provision for loan losses,Quota rental,Real estate rental,Refining and assay,Registrar and transfer agent fees,Reimbursement of parent company expense,Rental,Repairs and maintenance,Repairs and maintenance - boats,Repairs and maintenance - buildings,Repairs and maintenance - machinery and equipment,Repairs and maintenance - vehicles,Research and development,Restructuring costs,Road costs,Royalty expenses - non-resident,Royalty expenses - resident,Salaries and wages,Salt, bait, and ice,Securities and commission fees,Security,Selling expenses,Shipping and warehouse expense,Shop expense,Small tools,Storage,Studio and recording,Sub-contracts,Supplies,Telephone and telecommunications,Training expense,Transfer fees,Travel expenses,Uniforms,Upgrade,Utilities,Vehicle expenses,Veterinary fees,Water,Warranty expenses,Withholding taxes,Cost of Good Sold,Office expenses,Motor Vehicles,Payment."
+    # Generate a response
+    completion = openai.Completion.create(
+        engine=model_engine,
+        prompt=prompt,
+        max_tokens=1024,
+        n=1,
+        stop=None,
+        temperature=1,
+    )
+
+    response = completion.choices[0].text
+    response = response.lstrip()
+    response = response.rstrip()
+    print(remove_extras_ai(transaction))
+    print(response)
+    # # ai code
+
+    # duplicates_ids = []
+
+    # for index, row in enumerate(csvreader):
+    #     if remove_digits(transaction) in remove_digits(row[1]):
+    #         duplicates_ids.append(index)
+    # file.close()
+    
+    # # read csv with pandas and update caategories imcluding duuplicates
+    # csv_file = pd.read_csv(Path(settings.MEDIA_ROOT + '/statements/' +request.POST.get('file_name')), header=None)
+    # for dup in duplicates_ids:
+    #     csv_file.iat[int(dup), 5] = request.POST.get('category') # 5 is category column
+    # csv_file.to_csv(Path(settings.MEDIA_ROOT + '/statements/' +request.POST.get('file_name')), index=False, header=None)
+
+    # # add to dictionary db
+    # category = DictionaryCategories.objects.get(name=request.POST.get('category'))
+    # check_sub_category = DictionarySubcategoriesNotApproved.objects.filter(name= remove_digits(transaction)).exists()
+    # if not check_sub_category: # not found duplicate
+    #     sub_category = DictionarySubcategoriesNotApproved.objects.create(name= remove_digits(transaction), dictionary_category_id = category.pk, approved=0)
+    #     sub_category.save()
+
+    data = {'status': 200,
+            'msg': 'edit success!',
+            'response': response,
+            # 'duplicates_ids': duplicates_ids
+            }
+    return JsonResponse(data)
+
 def edit_csv(request):
     # print('edit csv called')
     # print(request.POST.get('id'))
@@ -843,6 +903,14 @@ def edit_csv(request):
 def remove_digits(str):
     # str = str.split('*')[0]
     clean_str = re.sub('\w*\d|\*.*\w.*', '', str)
+    # clean_str = re.sub('[\d\-\*]', ' ', str)
+    clean_str = clean_str.rstrip()
+    clean_str = clean_str.rstrip("FROM: /-")
+    return clean_str
+
+def remove_extras_ai(str):
+    # str = str.split('*')[0]
+    clean_str = re.sub('[\d\-\*]', ' ', str)
     clean_str = clean_str.rstrip()
     clean_str = clean_str.rstrip("FROM: /-")
     return clean_str

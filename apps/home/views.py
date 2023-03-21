@@ -224,6 +224,8 @@ def download_csv(request):
                     os.remove(Path(settings.MEDIA_ROOT + str(file_name_csv)))
                     Document.objects.filter(pk=file_id).delete()
 
+                for x in transactions:
+                    print(x)
                 return render(request, 'home/missing_categories.html', 
                     {
                     'transactions': transactions,

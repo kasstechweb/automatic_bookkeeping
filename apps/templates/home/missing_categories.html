@@ -101,6 +101,7 @@
                       <td></td>
                     {% endif %}
                     <td class="text-right">
+                      <a href="#" class="btn btn-link btn-info btn-just-icon ai"  data-toggle="modal" data-target="#aiModal"><i class="material-icons">memory</i></a>
                       <a href="#" class="btn btn-link btn-info btn-just-icon edit"  data-toggle="modal" data-target="#myModal"><i class="material-icons">edit</i></a>
                     </td>
                   </tr>
@@ -149,6 +150,62 @@
     </div>
   </div>
 </div>
+
+<div class="modal fade" id="aiModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Categorizing Transaction Using AI</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+          <i class="material-icons">clear</i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div id="ailoader" class="ml-auto mr-auto loader"></div>
+        <!-- <input type="hidden" id="aitransaction"> -->
+        <!-- <h4 class="modal-title">Result: </h4>
+        <h4 id="ai_response" class="modal-title">test category</h4> -->
+        <!-- <script>
+          var transaction = $('#transaction').val()
+          if($('#transaction').hasClass('show')) {
+            console.log(transaction)
+          }
+          
+        </script> -->
+        <form id="modal_form" class="form-horizontal" action="" method="">
+          {% csrf_token %}
+          <input type="hidden" name="row_id" id="row_id">
+          <input type="hidden" name="original_transaction" id="original_transaction">
+
+          <div class="form-group">
+            <input id="aitransaction" class="form-control" type="text" name="transaction" required="true" placeholder="Transaction"/>
+          </div>
+
+          <div class="form-group">
+            <select class="selectpicker" id="ai_category" name="ai_category" data-width="100%" data-live-search="true" data-style="btn btn-primary " title="Select Categories">
+              {% for cat in categories %}
+                <option value="{{ cat.name }}">{{ cat.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- <div class="form-group">
+            <input id="amount" class="form-control" type="text" name="amount" required="true" placeholder="Amount"/>
+          </div> -->
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary btn-link" onclick="edit_csv_ajax()">
+              
+              Save
+            </button>
+            <button type="button" class="btn btn-danger btn-link" data-dismiss="modal">Close</button>
+          </div>
+          
+      </form>
+      </div>
+    </div>
+  </div>
+</div><!-- end modal -->
 
 <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
   <div class="modal-dialog">
@@ -224,6 +281,7 @@
       var data = table.row($tr).data();
       console.log('You press on Row:-' + data[0] + '-' + data[1] + '-' + data[2] );
       $('#transaction').val(data[1]);
+      $('#aitransaction').val(data[1]);
       $('#original_transaction').val(data[1]);
 
       $('select[name="category"]').find('option[value="'+data[2]+'"]').attr("selected","selected")
@@ -234,6 +292,66 @@
       $('#row_id').val(data[0]);
       // $("html").removeClass('perfect-scrollbar-on')
       // $('.main-panel').addClass('ps-active-y')
+    });
+
+    table.on('click', '.ai', function() {
+      $('#ailoader').removeClass('d-none');
+      $tr = $(this).closest('tr');
+      var data = table.row($tr).data();
+      console.log('ai transaction:-' + data[0] + '-' + data[1] + '-' + data[2] );
+      // $('#transaction').val(data[1]);
+      $('#aitransaction').val(data[1]);
+      // $('#original_transaction').val(data[1]);
+      // $('select[name="category"]').find('option[value="'+data[2]+'"]').attr("selected","selected")
+      // console.log('option[value="'+data[2]+'"]')
+      // $('.selectpicker').selectpicker('refresh')
+
+      // $('#amount').val(data[3]);
+      // $('#row_id').val(data[0]);
+
+
+      // $("html").removeClass('perfect-scrollbar-on')
+      // $('.main-panel').addClass('ps-active-y')
+      
+      $.ajax({
+          type: 'POST',
+          beforeSend: function(xhr, settings) {
+              function getCookie(name) {
+                  var cookieValue = null;
+                  if (document.cookie && document.cookie != '') {
+                      var cookies = document.cookie.split(';');
+                      for (var i = 0; i < cookies.length; i++) {
+                          var cookie = jQuery.trim(cookies[i]);
+                          // Does this cookie string begin with the name we want?
+                          if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                              cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                              break;
+                          }
+                      }
+                  }
+                  return cookieValue;
+              }
+              if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+                  // Only send the token to relative URLs i.e. locally.
+                  xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+              }
+          },
+          data: {
+            // id: row_id,
+            transaction: data[1],
+            // amount: amount,
+            file_name: "{{ file_name }}"
+          },
+          url: "{% url 'ai_get_category' %}"
+      }).done(function(data) {
+        // $('#ai_response').html(data.response);
+        console.log(data.response)
+        $('#ailoader').addClass('d-none');
+        $('select[name=ai_category]').val(data.response);
+        $('.selectpicker').selectpicker('refresh')
+      }).fail(function(data) {
+          console.log('errors happened: ' + data);
+      });
     });
 
     // $('#myModal').on('hidden.bs.modal', function () {
