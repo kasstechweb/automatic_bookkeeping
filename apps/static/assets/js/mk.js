@@ -260,14 +260,19 @@ mk = {
             cancelButtonClass: 'btn btn-danger',
             confirmButtonText: 'Yes, delete it!',
             buttonsStyling: false
-          }).then(function() {
-            swal({
-              title: 'Deleted!',
-              text: 'Your file has been deleted.',
-              type: 'success',
-              confirmButtonClass: "btn btn-success",
-              buttonsStyling: false
-            })
+          })
+          .then(function(result) {
+            console.log(result)
+            if(result.value) {
+              swal({
+                title: 'Deleted!',
+                text: 'Your file has been deleted.',
+                type: 'success',
+                confirmButtonClass: "btn btn-success",
+                buttonsStyling: false
+              })
+            }
+            
           }).catch(swal.noop)
         } else if (type == 'warning-message-and-cancel') {
           swal({
